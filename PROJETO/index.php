@@ -7,7 +7,7 @@ include "biblioteca.php";
 
 if (isset($_GET['page'])) {
     if ($_GET['page'] == 1) {
-        include 'insert.php';  # Colocar link do INSERT
+        include 'cadastro.php';  # Colocar link do INSERT
 
     } elseif ($_GET['page'] == 2) {
         include 'update.php';  # Colocar link do UPDATE

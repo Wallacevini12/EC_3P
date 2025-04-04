@@ -3,11 +3,15 @@ USE learnhub_ep ;
 
 DROP SCHEMA learnhub_ep;
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS professor (
-  codigo_professor INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  nome_professor VARCHAR(90) NOT NULL,
-  email_professor VARCHAR(180) NOT NULL,
-  PRIMARY KEY (codigo_professor));
+
+CREATE TABLE usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    curso VARCHAR(100),
+    senha VARCHAR(255) NOT NULL,
+    tipo_usuario ENUM('aluno', 'professor', 'monitor') NOT NULL
+);
 
 
 CREATE TABLE IF NOT EXISTS curso (
@@ -28,30 +32,6 @@ CREATE TABLE IF NOT EXISTS disciplina (
 CREATE TABLE IF NOT EXISTS periodos (
   numero_periodo INT UNSIGNED NOT NULL,
   PRIMARY KEY (numero_periodo));
-
-
-
-CREATE TABLE IF NOT EXISTS monitor (
-  codigo_monitor INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  nome_monitor VARCHAR(90) NOT NULL,
-  email_monitor VARCHAR(180) NOT NULL,
-  bolsa_monitor DECIMAL(5,2) NOT NULL,
-  curso_codigo INT UNSIGNED NOT NULL,
-  PRIMARY KEY (codigo_monitor),
-    FOREIGN KEY (curso_codigo)
-    REFERENCES curso (codigo_curso)
-);
-
-
-CREATE TABLE IF NOT EXISTS aluno (
-  codigo_aluno INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  nome_aluno VARCHAR(180) NOT NULL,
-  email_aluno VARCHAR(180) NOT NULL,
-  periodo_numero INT UNSIGNED NOT NULL,
-  PRIMARY KEY (codigo_aluno),
-    FOREIGN KEY (periodo_numero)
-    REFERENCES periodos (numero_periodo)
-);
 
 
 CREATE TABLE IF NOT EXISTS pergunta (

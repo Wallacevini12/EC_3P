@@ -59,6 +59,15 @@ if (isset($_POST['nome']) && isset($_POST['email']) && isset($_POST['senha'])) {
       class="form-control mb-2"
       placeholder="Senha"
       required>
+      
+    <select name="curso" class="form-select mb-3" required>
+      <option value="" disabled selected>Selecione seu curso</option>
+      <option value="Engenharia de Software">Engenharia de Software</option>
+      <option value="Sistemas de Informação">Sistemas de Informação</option>
+      <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
+      <option value="Ciência da Computação">Ciência da Computação</option>
+      <option value="Redes de Computadores">Redes de Computadores</option>
+    </select>
 
     <button type="submit" 
     class="btn btn-primary">Enviar</button>

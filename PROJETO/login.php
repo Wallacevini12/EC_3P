@@ -27,18 +27,27 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
         $user = $result->fetch_assoc();
 
         if (password_verify($senha, $user['senha'])) {
-            
             // Login sucesso
             $_SESSION['id'] = $user['id'];
             $_SESSION['nome'] = $user['nome'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
 
-            header('Location: index.html');
-            
+            // Se for aluno, buscar o código da tabela 'aluno'
+            if ($user['tipo_usuario'] === 'aluno') {
+                $stmtAluno = $oMysql->prepare("SELECT codigo_aluno FROM aluno WHERE email_aluno = ?");
+                $stmtAluno->bind_param("s", $email);
+                $stmtAluno->execute();
+                $stmtAluno->bind_result($codigo_aluno);
+                $stmtAluno->fetch();
+                $_SESSION['codigo_aluno'] = $codigo_aluno;
+                $stmtAluno->close();
+            }
+
+            // Redireciona para a página onde o aluno pode registrar a pergunta
+            header('Location: registrar_pergunta.php');
             exit;
-            
-        }
-         else {
+
+        } else {
             echo "Senha incorreta!";
         }
     } else {

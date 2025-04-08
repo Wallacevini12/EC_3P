@@ -17,6 +17,19 @@ if (!isset($_SESSION['id'])) {
     header('Location: login.php');
     exit;
 }
+// Verificar se o usuário logado é do tipo 'aluno'
+$usuario_id = $_SESSION['id'];
+$stmt = $oMysql->prepare("SELECT tipo_usuario FROM usuarios WHERE id = ?");
+$stmt->bind_param("i", $usuario_id);
+$stmt->execute();
+$stmt->bind_result($tipo_usuario);
+$stmt->fetch();
+$stmt->close();
+
+if ($tipo_usuario !== 'aluno') {
+    echo "Acesso restrito! Apenas usuários do tipo aluno podem registrar perguntas.";
+    exit;
+}
 
 // Buscar as disciplinas cadastradas para preencher o select
 $sql = "SELECT nome_disciplina FROM disciplinas ORDER BY nome_disciplina ASC";

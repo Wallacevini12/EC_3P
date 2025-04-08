@@ -13,7 +13,7 @@ if (isset($_GET['page'])) {
         include 'update.php';  # Colocar link do UPDATE
 
     } elseif ($_GET['page'] == 3) {
-        include 'delete.php';  # Colocar link do DELETE
+        include 'cadastro_monitor.php';  # Colocar link do DELETE
 
     } else {
         include 'main.php';

@@ -12,12 +12,10 @@ if (
     $curso = $_POST['curso'];
 
     // Verifica o tipo de usuário pelo e-mail
-    if (strpos($email, '@aluno') !== false) {
-        $tipo_usuario = 'aluno';
-    } elseif (strpos($email, '@professor') !== false) {
-        $tipo_usuario = 'professor';
+    if (strpos($email, '@monitor') !== false) {
+        $tipo_usuario = 'monitor';
     }  else {
-        echo "E-mail inválido. Use @aluno ou  @professor.";
+        echo "E-mail inválido. Use @monitor.";
         exit;
     }
 
@@ -40,18 +38,9 @@ if (
         // Recupera o ID gerado na tabela 'usuarios'
         $usuario_id = $oMysql->insert_id;
 
-        // Insere o ID na tabela específica, conforme o tipo de usuário
-        if ($tipo_usuario === 'aluno') {
-            $stmt2 = $oMysql->prepare("INSERT INTO aluno (id) VALUES (?)");
-        } elseif ($tipo_usuario === 'professor') {
-            $stmt2 = $oMysql->prepare("INSERT INTO professor (id) VALUES (?)");
-        } 
-        else {
-          echo "E-mail inválido. Use @aluno ou @professor.";
-          exit;
-      }
-  
-
+        // Insere o ID na tabela do monitor 
+        $stmt2 = $oMysql->prepare("INSERT INTO monitor(id) VALUES (?)");
+        
         $stmt2->bind_param("i", $usuario_id);
 
         if ($stmt2->execute()) {
@@ -71,7 +60,7 @@ if (
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <title>Cadastro de Usuários</title>
+  <title>Cadastro de Monitor </title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -81,9 +70,9 @@ if (
 
 <div class="container mt-3">
   <h2>CRUD - Inserir Usuário</h2>
-  <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
+  <p>Preencha os campos abaixo (e-mail com domínio de monitor):</p>    
 
-  <form method="POST" action="index.php?page=1">
+  <form method="POST" action="index.php?page=3">
     <input
       type="text"
       name="nome"

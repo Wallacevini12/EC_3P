@@ -54,7 +54,7 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 exit;
         
             } elseif ($user['tipo_usuario'] === 'monitor') {
-                header('Location: home_monitor.html');
+                header('Location: home_monitor.php');
                 exit;
         
             } else {

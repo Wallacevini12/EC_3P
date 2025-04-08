@@ -31,30 +31,36 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
             $_SESSION['id'] = $user['id'];
             $_SESSION['nome'] = $user['nome'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
-
-            // Se for aluno, buscar o código da tabela 'aluno'
+        
+            // Redirecionamento conforme o tipo de usuário
             if ($user['tipo_usuario'] === 'aluno') {
+                // Buscar o código da tabela 'aluno'
                 $stmtAluno = $oMysql->prepare("SELECT a.id AS codigo_aluno
-                                                        FROM aluno a
-                                                        JOIN usuarios u ON a.id = u.id
-                                                        WHERE u.email = ?;");
+                                               FROM aluno a
+                                               JOIN usuarios u ON a.id = u.id
+                                               WHERE u.email = ?;");
                 $stmtAluno->bind_param("s", $email);
                 $stmtAluno->execute();
                 $stmtAluno->bind_result($codigo_aluno);
                 $stmtAluno->fetch();
                 $_SESSION['codigo_aluno'] = $codigo_aluno;
                 $stmtAluno->close();
+        
+                header('Location: registrar_pergunta.php');
+                exit;
+        
+            } elseif ($user['tipo_usuario'] === 'professor') {
+                header('Location: home_professor.html');
+                exit;
+        
+            } elseif ($user['tipo_usuario'] === 'monitor') {
+                header('Location: home_monitor.html');
+                exit;
+        
+            } else {
+                echo "Tipo de usuário inválido!";
             }
-
-            // Redireciona para a página onde o aluno pode registrar a pergunta
-            header('Location: registrar_pergunta.php');
-            exit;
-
-        } else {
-            echo "Senha incorreta!";
         }
-    } else {
-        echo "Usuário não encontrado!";
     }
 
     $stmt->close();

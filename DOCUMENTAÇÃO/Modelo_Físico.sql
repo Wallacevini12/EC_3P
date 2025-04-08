@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
-DROP SCHEMA learnhub_ep;
+/*DROP SCHEMA learnhub_ep;*/
 -- Tabelas base
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT,

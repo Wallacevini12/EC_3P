@@ -92,10 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
             <select class="form-select" id="materia" name="materia" required>
                 <option value="" disabled selected>Selecione uma matéria</option>
                 <?php
-                // Exibe as opções com base nas disciplinas cadastradas
                 foreach ($disciplinas as $disciplina) {
-                    // O valor da opção será o nome da disciplina, 
-                    // que depois será usado na consulta para recuperar o código da disciplina.
+
                     echo '<option value="' . htmlspecialchars($disciplina['nome_disciplina']) . '">'
                          . htmlspecialchars($disciplina['nome_disciplina']) . '</option>';
                 }

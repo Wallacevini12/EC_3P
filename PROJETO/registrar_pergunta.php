@@ -2,29 +2,41 @@
 session_start();
 
 // Incluir o arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; // Isso garante que a função conecta_db() estará disponível
+include_once 'conecta_db.php'; // Esse arquivo deve conter a função conecta_db()
+
+// Conecta e seleciona o banco de dados learnhub_ep
+$oMysql = conecta_db();
+if ($oMysql->connect_error) {
+    echo "Erro de conexão: " . $oMysql->connect_error;
+    exit;
+}
+$oMysql->select_db("learnhub_ep");
 
 // Verificar se o usuário está logado
 if (!isset($_SESSION['id'])) {
-    // Se não estiver logado, redireciona para a página de login
     header('Location: login.php');
     exit;
 }
 
+// Buscar as disciplinas cadastradas para preencher o select
+$sql = "SELECT nome_disciplina FROM disciplinas ORDER BY nome_disciplina ASC";
+$result = $oMysql->query($sql);
+if (!$result) {
+    echo "Erro ao buscar disciplinas: " . $oMysql->error;
+    exit;
+}
+$disciplinas = $result->fetch_all(MYSQLI_ASSOC);
+$result->free();
+
+// Processar o formulário de registro de pergunta
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($_POST['materia'])) {
     $pergunta = $_POST['pergunta'];
-    $materia = $_POST['materia'];
+    $materia  = $_POST['materia'];
     $aluno_id = $_SESSION['codigo_aluno'];
 
-    // Verifique se o aluno existe na tabela 'aluno'
-    $oMysql = conecta_db();
-    if ($oMysql->connect_error) {
-        echo "Erro de conexão: " . $oMysql->connect_error;
-        exit;
-    }
-
-    $stmt = $oMysql->prepare("SELECT codigo_aluno FROM aluno WHERE codigo_aluno = ?");
-    $stmt->bind_param("i", $aluno_id); // Verifica se o aluno existe no banco de dados
+    // Verificar se o aluno existe na tabela 'aluno'
+    $stmt = $oMysql->prepare("SELECT id FROM aluno WHERE id = ?");
+    $stmt->bind_param("i", $aluno_id);
     $stmt->execute();
     $stmt->store_result();
 
@@ -32,26 +44,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
         echo "Erro: Aluno não encontrado!";
         exit;
     }
-
     $stmt->close();
 
-    // Buscar o código da disciplina pelo nome
-    $stmt = $oMysql->prepare("SELECT codigo_disciplina FROM disciplina WHERE nome_disciplina = ?");
+    // Buscar o código da disciplina pelo nome na tabela 'disciplinas'
+    $stmt = $oMysql->prepare("SELECT codigo_disciplina FROM disciplinas WHERE nome_disciplina = ?");
     $stmt->bind_param("s", $materia);
     $stmt->execute();
     $stmt->bind_result($disciplina_codigo);
     $stmt->fetch();
     $stmt->close();
 
-    // Verifique se o código da disciplina foi encontrado
     if (empty($disciplina_codigo)) {
         echo "Erro: Disciplina não encontrada!";
         exit;
     }
 
-    // Inserção da pergunta no banco
-    $stmt = $oMysql->prepare("INSERT INTO pergunta (aluno_codigo, enunciado, disciplina_codigo) VALUES (?, ?, ?)");
-    $stmt->bind_param("isi", $aluno_id, $pergunta, $disciplina_codigo);
+    // Inserir a pergunta na tabela 'perguntas'
+    $stmt = $oMysql->prepare("INSERT INTO perguntas (enunciado, usuario_codigo, disciplina_codigo) VALUES (?, ?, ?)");
+    $stmt->bind_param("sii", $pergunta, $aluno_id, $disciplina_codigo);
 
     if ($stmt->execute()) {
         echo "Pergunta registrada com sucesso!";
@@ -63,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
     $oMysql->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -81,11 +90,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
         <div class="mb-3">
             <label for="materia" class="form-label">Matéria</label>
             <select class="form-select" id="materia" name="materia" required>
-                <option value="Engenharia de Software">Engenharia de Software</option>
-                <option value="Sistemas de Informação">Sistemas de Informação</option>
-                <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
-                <option value="Ciência da Computação">Ciência da Computação</option>
-                <option value="Redes de Computadores">Redes de Computadores</option>
+                <option value="" disabled selected>Selecione uma matéria</option>
+                <?php
+                // Exibe as opções com base nas disciplinas cadastradas
+                foreach ($disciplinas as $disciplina) {
+                    // O valor da opção será o nome da disciplina, 
+                    // que depois será usado na consulta para recuperar o código da disciplina.
+                    echo '<option value="' . htmlspecialchars($disciplina['nome_disciplina']) . '">'
+                         . htmlspecialchars($disciplina['nome_disciplina']) . '</option>';
+                }
+                ?>
             </select>
         </div>
         <div class="mb-3">

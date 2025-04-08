@@ -34,7 +34,10 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
 
             // Se for aluno, buscar o código da tabela 'aluno'
             if ($user['tipo_usuario'] === 'aluno') {
-                $stmtAluno = $oMysql->prepare("SELECT codigo_aluno FROM aluno WHERE email_aluno = ?");
+                $stmtAluno = $oMysql->prepare("SELECT a.id AS codigo_aluno
+                                                        FROM aluno a
+                                                        JOIN usuarios u ON a.id = u.id
+                                                        WHERE u.email = ?;");
                 $stmtAluno->bind_param("s", $email);
                 $stmtAluno->execute();
                 $stmtAluno->bind_result($codigo_aluno);

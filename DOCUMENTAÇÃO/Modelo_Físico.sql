@@ -123,4 +123,3 @@ CREATE TABLE pergunta_possui_disciplina (
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
 INSERT INTO disciplinas VALUES ('1','Engenharia de software', 'EAD');
 
-SELECT id FROM aluno WHERE email= 'teste4@aluno.com';

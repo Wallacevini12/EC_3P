@@ -121,5 +121,9 @@ CREATE TABLE pergunta_possui_disciplina (
 
 -- Inserts na tabela periodos
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
-INSERT INTO disciplinas VALUES ('1','Engenharia de software', 'EAD');
-
+INSERT INTO disciplinas VALUES
+  ('1','Engenharia de software', 'EAD'),
+  ('2', 'Sistemas de Informação', 'EAD'),
+  ('3', 'Análise e Desenvolvimento de Sistemas', 'EAD'),
+  ('4', 'Ciência da Computação', 'EAD'),
+  ('5', 'Redes de Computadores', 'EAD');

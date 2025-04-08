@@ -2,7 +2,7 @@
 session_start();
 
 // Incluir o arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; // Esse arquivo deve conter a função conecta_db()
+include_once 'conecta_db.php';
 
 // Conecta e seleciona o banco de dados learnhub_ep
 $oMysql = conecta_db();

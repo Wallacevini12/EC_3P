@@ -117,6 +117,14 @@ CREATE TABLE pergunta_possui_disciplina (
     FOREIGN KEY (pergunta_codigo) REFERENCES perguntas(codigo_pergunta),
     FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina)
 );
+-- Tabela de respostas
+CREATE TABLE IF NOT EXISTS respostas (
+    codigo_resposta INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    codigo_pergunta INT UNSIGNED NOT NULL,
+    resposta TEXT NOT NULL,
+    data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (codigo_pergunta) REFERENCES perguntas(codigo_pergunta)
+);
 
 
 -- Inserts na tabela periodos

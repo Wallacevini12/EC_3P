@@ -65,6 +65,7 @@ if (!$result) {
         <p class="alert alert-info">Nenhuma pergunta registrada.</p>
     <?php endif; ?>
 
+    
 </div>
 
 </body>

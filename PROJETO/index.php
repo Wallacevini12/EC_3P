@@ -16,10 +16,10 @@ if (isset($_GET['page'])) {
         include 'cadastro_monitor.php';  # Colocar link do DELETE
 
     } else {
-        include 'main.php';
+        include 'index.html';
     }
 } else {
-    include 'main.php';
+    include 'index.html';
 }
 
 ?>

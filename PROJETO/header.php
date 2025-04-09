@@ -10,12 +10,14 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body>
-<nav class="navbar navbar-inverse">
+<nav class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
     <ul class="nav navbar-nav">
-      <li class="active"><a href="cadastro.php">Home</a></li>
+      <li class="active"><a href="index.html">Home</a></li>
     </ul>
   </div>
 </nav>
+
+
 </body>
 </html>

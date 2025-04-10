@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,10 +13,9 @@
   <div class="container-fluid">
     <ul class="nav navbar-nav">
       <li class="active"><a href="index.html">Home</a></li>
+      <li><a href="minha_conta.php">Minha Conta</a></li>
     </ul>
   </div>
 </nav>
-
-
 </body>
 </html>

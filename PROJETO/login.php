@@ -50,7 +50,7 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 exit;
         
             } elseif ($user['tipo_usuario'] === 'professor') {
-                header('Location: home_professor.html');
+                header('Location: home_professor.php');
                 exit;
         
             } elseif ($user['tipo_usuario'] === 'monitor') {

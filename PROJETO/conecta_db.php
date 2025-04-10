@@ -3,7 +3,7 @@
        
         $DB_NAME = "learnhub_ep";
         $USER = "root";
-        $PASS = "PUC@1234";
+        $PASS = "";
         $SERVER = "localhost";
 
         $CONEXAO = new mysqli($SERVER, $USER, $PASS, $DB_NAME);

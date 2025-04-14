@@ -1,7 +1,7 @@
 <?php
-session_start(); // <- ESSENCIAL para acessar $_SESSION
+session_start();
 
-require_once 'conecta_db.php'; // Certifique-se que esse é o nome do arquivo onde está a função conecta_db()
+require_once 'conecta_db.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION['usuario_id'])) {
@@ -20,11 +20,24 @@ if ($conn->connect_error) {
 // Busca os dados do usuário
 $sql = "SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?";
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    die("Erro na preparação da consulta: " . $conn->error);
+}
+
 $stmt->bind_param("i", $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
+if ($result->num_rows === 0) {
+    echo "Usuário não encontrado.";
+    exit();
+}
+
 $dados_usuario = $result->fetch_assoc();
+
+$stmt->close();
+$conn->close();
 ?>
 
 <!DOCTYPE html>
@@ -41,7 +54,9 @@ $dados_usuario = $result->fetch_assoc();
     <p><strong>Nome:</strong> <?= htmlspecialchars($dados_usuario['nome']) ?></p>
     <p><strong>Email:</strong> <?= htmlspecialchars($dados_usuario['email']) ?></p>
     <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
-    <p><strong>Tipo de Usuário:</strong> <?= ucfirst($dados_usuario['tipo_usuario']) ?></p>
+    <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
+
+    <a href="logout.php" class="btn btn-danger">Sair</a>
 </div>
 
 </body>

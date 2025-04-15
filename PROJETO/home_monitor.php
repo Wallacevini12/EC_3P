@@ -1,5 +1,9 @@
 <?php
-
+session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
 include "header.php";
 // Incluir o arquivo de conexão com o banco de dados
 include_once 'conecta_db.php'; 

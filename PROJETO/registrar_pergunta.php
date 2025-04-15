@@ -1,6 +1,13 @@
 <?php
-session_start();
 
+session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
+
+
+include "header.php";
 // Incluir o arquivo de conexão com o banco de dados
 include_once 'conecta_db.php';
 
@@ -92,33 +99,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
     <title>Registrar Pergunta</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 
-<div class="container mt-3">
-    <h2>Registrar Pergunta</h2>
-    <form method="POST" action="registrar_pergunta.php">
-        <div class="mb-3">
-            <label for="materia" class="form-label">Matéria</label>
-            <select class="form-select" id="materia" name="materia" required>
-                <option value="" disabled selected>Selecione uma matéria</option>
-                <?php
-                foreach ($disciplinas as $disciplina) {
-
-                    echo '<option value="' . htmlspecialchars($disciplina['nome_disciplina']) . '">'
-                         . htmlspecialchars($disciplina['nome_disciplina']) . '</option>';
-                }
-                ?>
-            </select>
+<div class="d-flex justify-content-center align-items-center vh-100" style="margin-top: 80px">
+    <div class="container" style="max-width: 600px;">
+        <div class="card shadow p-5 d-flex flex-column gap-4 w-100 mb-3">
+            <h2 class="text-center mb-4">Registrar Pergunta</h2>
+            <form method="POST" action="registrar_pergunta.php" class="d-flex flex-column gap-4">
+                <div>
+                    <label for="materia" class="form-label mb-3">Matéria</label>
+                    <select class="form-select mb-3" id="materia" name="materia" required>
+                        <option value="" disabled selected>Selecione uma matéria</option>
+                        <?php
+                        foreach ($disciplinas as $disciplina) {
+                            echo '<option value="' . htmlspecialchars($disciplina['nome_disciplina']) . '">'
+                                 . htmlspecialchars($disciplina['nome_disciplina']) . '</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div>
+                    <label for="pergunta" class="form-label">Sua Pergunta</label>
+                    <textarea class="form-control" id="pergunta" name="pergunta" rows="4" placeholder="Digite sua dúvida aqui..." required></textarea>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">Registrar Pergunta</button>
+                </div>
+            </form>
         </div>
-        <div class="mb-3">
-            <label for="pergunta" class="form-label">Sua Pergunta</label>
-            <textarea class="form-control" id="pergunta" name="pergunta" rows="4" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Registrar Pergunta</button>
-    </form>
+    </div>
 </div>
 
 </body>

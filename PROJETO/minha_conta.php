@@ -3,13 +3,12 @@ session_start();
 
 require_once 'conecta_db.php';
 
-// Verifica se o usuário está logado
-if (!isset($_SESSION['usuario_id'])) {
+if (!isset($_SESSION['id'])) {
     header("Location: login.php");
     exit();
 }
 
-$usuario_id = $_SESSION['usuario_id'];
+$usuario_id = $_SESSION['id'];
 $conn = conecta_db();
 
 // Verifica conexão

@@ -1,4 +1,6 @@
 <?php
+// Incluindo o arquivo de conexão com o banco de dados
+require_once 'conecta_db.php'; 
 
 if (
     isset($_POST['nome']) &&
@@ -11,13 +13,23 @@ if (
     $senha = $_POST['senha'];
     $curso = $_POST['curso'];
 
+    // Validação de e-mail para monitor
+    if (strpos($email, '@monitor') !== false) {
+        echo "<script>alert('Apenas professor pode realizar o cadastro de monitor'); window.location.href = 'cadastro.php';</script>";
+        // Limpa as variáveis
+        unset($nome, $email, $senha, $curso);
+        exit;
+    }
+
     // Verifica o tipo de usuário pelo e-mail
     if (strpos($email, '@aluno') !== false) {
         $tipo_usuario = 'aluno';
     } elseif (strpos($email, '@professor') !== false) {
         $tipo_usuario = 'professor';
-    }  else {
-        echo "E-mail inválido. Use @aluno ou  @professor.";
+    } else {
+        echo "<script>alert('E-mail inválido. Use @aluno ou @professor'); window.location.href = 'cadastro.php';</script>";
+        // Limpa as variáveis
+        unset($nome, $email, $senha, $curso);
         exit;
     }
 
@@ -25,7 +37,7 @@ if (
     $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
 
     // Conecta ao banco de dados
-    $oMysql = conecta_db();
+    $oMysql = conecta_db();  // Conecta ao banco de dados usando a função conecta_db()
 
     if ($oMysql->connect_error) {
         echo "Erro de conexão: " . $oMysql->connect_error;
@@ -45,17 +57,12 @@ if (
             $stmt2 = $oMysql->prepare("INSERT INTO aluno (id) VALUES (?)");
         } elseif ($tipo_usuario === 'professor') {
             $stmt2 = $oMysql->prepare("INSERT INTO professor (id) VALUES (?)");
-        } 
-        else {
-          echo "E-mail inválido. Use @aluno ou @professor.";
-          exit;
-      }
-  
+        }
 
         $stmt2->bind_param("i", $usuario_id);
 
         if ($stmt2->execute()) {
-            header('Location: index.html');
+            echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.html';</script>";
             exit;
         } else {
             echo "Erro ao cadastrar tipo específico: " . $stmt2->error;
@@ -90,7 +97,7 @@ if (
     <h2 class="mb-3">Cadastro de Usuário</h2>
     <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
 
-    <form method="POST" action="index.php?page=1">
+    <form method="POST" action="cadastro.php">
       <input
         type="text"
         name="nome"

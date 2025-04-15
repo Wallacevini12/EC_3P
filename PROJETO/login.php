@@ -79,33 +79,39 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
 </head>
 <body>
 
+<!-- Botão voltar fora do card -->
 <div class="container mt-3">
-    <h2>Login de Usuário</h2>
-    <p>Informe seus dados para acessar:</p>
+    <a href="index.php" class="btn btn-secondary btn-sm mb-3">&larr; Voltar</a>
+</div>
 
-    <?php if (isset($erro)) { ?>
-        <div class="alert alert-danger"><?php echo $erro; ?></div>
-    <?php } ?>
+<!-- Card centralizado com o formulário -->
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow p-4" style="min-width: 350px; max-width: 500px; width: 100%;">
+        <h2 class="mb-3">Login de Usuário</h2>
+        <p>Informe seus dados para acessar:</p>
 
-    <form method="POST" action="login.php">
+        <?php if (isset($erro)) { ?>
+            <div class="alert alert-danger"><?php echo $erro; ?></div>
+        <?php } ?>
 
-        <input
-            type="email"
-            name="email"
-            class="form-control mb-2"
-            placeholder="Email cadastrado"
-            required>
+        <form method="POST" action="login.php">
+            <input
+                type="email"
+                name="email"
+                class="form-control mb-2"
+                placeholder="Email cadastrado"
+                required>
 
-        <input
-            type="password"
-            name="senha"
-            class="form-control mb-2"
-            placeholder="Senha"
-            required>
+            <input
+                type="password"
+                name="senha"
+                class="form-control mb-3"
+                placeholder="Senha"
+                required>
 
-        <button type="submit" class="btn btn-primary">Entrar</button>
-
-    </form>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+    </div>
 </div>
 
 </body>

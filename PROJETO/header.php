@@ -22,7 +22,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
     <!-- Marca -->
-    <a class="navbar-brand" href="index.html"><i class="bi bi-lightning-fill"></i> LearnHub</a>
+    <a class="navbar-brand" href="index.php"><i class="bi bi-lightning-fill"></i> LearnHub</a>
 
     <!-- Menu à esquerda -->
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,7 +31,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item active">
-          <a class="nav-link" href="index.html"><i class="bi bi-house-door-fill"></i> Home</a>
+          <a class="nav-link" href="index.php"><i class="bi bi-house-door-fill"></i> Home</a>
         </li>
         <?php if (isset($_SESSION['id'])): ?>
           <li class="nav-item">

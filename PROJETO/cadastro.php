@@ -79,44 +79,51 @@ if (
 </head>
 <body>
 
+<!-- Botão voltar fora do card -->
 <div class="container mt-3">
-  <h2>CRUD - Inserir Usuário</h2>
-  <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
+  <a href="index.php" class="btn btn-secondary btn-sm mb-3">&larr; Voltar</a>
+</div>
 
-  <form method="POST" action="index.php?page=1">
-    <input
-      type="text"
-      name="nome"
-      class="form-control mb-2"
-      placeholder="Nome"
-      required>
+<!-- Card centralizado com o formulário -->
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+  <div class="card shadow p-4" style="min-width: 350px; max-width: 500px; width: 100%;">
+    <h2 class="mb-3">Cadastro de Usuário</h2>
+    <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
 
-    <input
-      type="email"
-      name="email"
-      class="form-control mb-2"
-      placeholder="Email (ex: maria@aluno.edu)"
-      required>
+    <form method="POST" action="index.php?page=1">
+      <input
+        type="text"
+        name="nome"
+        class="form-control mb-2"
+        placeholder="Nome"
+        required>
 
-    <input
-      type="password"
-      name="senha"
-      class="form-control mb-2"
-      placeholder="Senha"
-      required>
+      <input
+        type="email"
+        name="email"
+        class="form-control mb-2"
+        placeholder="Email (ex: maria@aluno.edu)"
+        required>
 
-    <select name="curso" class="form-select mb-3" required>
-      <option value="" disabled selected>Selecione seu curso</option>
-      <option value="Engenharia de Software">Engenharia de Software</option>
-      <option value="Sistemas de Informação">Sistemas de Informação</option>
-      <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
-      <option value="Ciência da Computação">Ciência da Computação</option>
-      <option value="Redes de Computadores">Redes de Computadores</option>
-    </select>
+      <input
+        type="password"
+        name="senha"
+        class="form-control mb-2"
+        placeholder="Senha"
+        required>
 
-    <button type="submit" class="btn btn-primary">Cadastrar</button>
-    <button type="button" class="btn btn-primary" onclick="history.back()">Voltar</button>
-  </form>
+      <select name="curso" class="form-select mb-3" required>
+        <option value="" disabled selected>Selecione seu curso</option>
+        <option value="Engenharia de Software">Engenharia de Software</option>
+        <option value="Sistemas de Informação">Sistemas de Informação</option>
+        <option value="Análise e Desenvolvimento de Sistemas">Análise e Desenvolvimento de Sistemas</option>
+        <option value="Ciência da Computação">Ciência da Computação</option>
+        <option value="Redes de Computadores">Redes de Computadores</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
+    </form>
+  </div>
 </div>
 
 </body>

@@ -23,18 +23,19 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Verifica se o usuário foi encontrado
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
+        // Verifica se a senha está correta
         if (password_verify($senha, $user['senha'])) {
             // Login sucesso
             $_SESSION['id'] = $user['id'];
             $_SESSION['nome'] = $user['nome'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
-        
+
             // Redirecionamento conforme o tipo de usuário
             if ($user['tipo_usuario'] === 'aluno') {
-                // Buscar o código da tabela 'aluno'
                 $stmtAluno = $oMysql->prepare("SELECT a.id AS codigo_aluno
                                                FROM aluno a
                                                JOIN usuarios u ON a.id = u.id
@@ -45,22 +46,26 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 $stmtAluno->fetch();
                 $_SESSION['codigo_aluno'] = $codigo_aluno;
                 $stmtAluno->close();
-        
+
                 header('Location: registrar_pergunta.php');
                 exit;
-        
+
             } elseif ($user['tipo_usuario'] === 'professor') {
                 header('Location: home_professor.php');
                 exit;
-        
+
             } elseif ($user['tipo_usuario'] === 'monitor') {
                 header('Location: home_monitor.php');
                 exit;
-        
+
             } else {
-                echo "Tipo de usuário inválido!";
+                $erro = "Tipo de usuário inválido!";
             }
+        } else {
+            $erro = "Senha incorreta!";
         }
+    } else {
+        $erro = "Usuário não encontrado!";
     }
 
     $stmt->close();

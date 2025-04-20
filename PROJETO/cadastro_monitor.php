@@ -77,7 +77,7 @@ if (
 <div class="container d-flex justify-content-center align-items-center min-vh-100">
   <div class="card shadow p-4" style="min-width: 400px; max-width: 500px; width: 100%;">
 
-    <h2 class="mb-3">CRUD - Inserir Usuário</h2>
+    <h2 class="mb-3">Cadastrar Monitor</h2>
     <p class="mb-4">Preencha os campos abaixo (e-mail com domínio de monitor):</p>    
 
     <form method="POST" action="index.php?page=3">
@@ -92,7 +92,7 @@ if (
         type="email"
         name="email"
         class="form-control mb-2"
-        placeholder="Email (ex: maria@monitor.edu)"
+        placeholder="Email (ex: maria@monitor)"
         required>
 
       <input

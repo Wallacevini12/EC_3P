@@ -10,10 +10,12 @@ if ($oMysql->connect_error) {
 
 // Consultar todas as perguntas no banco
 $query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, a.nome_aluno, d.nome_disciplina
+   SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina, r.resposta
     FROM perguntas p
-    JOIN aluno a ON p.usuario_codigo = a.id
+    JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+    LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
+    WHERE r.resposta IS NOT NULL
     ORDER BY p.data_criacao DESC
 ";
 
@@ -57,7 +59,32 @@ if (!$result) {
                         <td><?= htmlspecialchars($row['nome_aluno'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
+                        <td>
+                               <!-- Botão para abrir o modal e mostrar a pergunta e resposta -->
+                               <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
+                        </td>
                     </tr>
+
+                    <!-- Modal para exibir a pergunta e a resposta -->
+                    <div class="modal fade" id="respostaModal<?= $row['codigo_pergunta'] ?>" tabindex="-1" aria-labelledby="respostaModalLabel<?= $row['codigo_pergunta'] ?>" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">Pergunta e Resposta</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <!-- Exibe a pergunta -->
+                                    <p><strong>Pergunta:</strong></p>
+                                    <p><?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?></p>
+                                    
+                                    <!-- Exibe a resposta da pergunta -->
+                                    <p><strong>Resposta:</strong> <?= htmlspecialchars($row['resposta'], ENT_QUOTES, 'UTF-8') ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 <?php endwhile; ?>
             </tbody>
         </table>

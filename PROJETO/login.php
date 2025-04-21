@@ -23,18 +23,19 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Verifica se o usuário foi encontrado
     if ($result->num_rows === 1) {
         $user = $result->fetch_assoc();
 
+        // Verifica se a senha está correta
         if (password_verify($senha, $user['senha'])) {
             // Login sucesso
             $_SESSION['id'] = $user['id'];
             $_SESSION['nome'] = $user['nome'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
-        
+
             // Redirecionamento conforme o tipo de usuário
             if ($user['tipo_usuario'] === 'aluno') {
-                // Buscar o código da tabela 'aluno'
                 $stmtAluno = $oMysql->prepare("SELECT a.id AS codigo_aluno
                                                FROM aluno a
                                                JOIN usuarios u ON a.id = u.id
@@ -45,22 +46,26 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 $stmtAluno->fetch();
                 $_SESSION['codigo_aluno'] = $codigo_aluno;
                 $stmtAluno->close();
-        
+
                 header('Location: registrar_pergunta.php');
                 exit;
-        
+
             } elseif ($user['tipo_usuario'] === 'professor') {
-                header('Location: home_professor.html');
+                header('Location: home_professor.php');
                 exit;
-        
+
             } elseif ($user['tipo_usuario'] === 'monitor') {
                 header('Location: home_monitor.php');
                 exit;
-        
+
             } else {
-                echo "Tipo de usuário inválido!";
+                $erro = "Tipo de usuário inválido!";
             }
+        } else {
+            $erro = "Senha incorreta!";
         }
+    } else {
+        $erro = "Usuário não encontrado!";
     }
 
     $stmt->close();
@@ -79,33 +84,39 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
 </head>
 <body>
 
+<!-- Botão voltar fora do card -->
 <div class="container mt-3">
-    <h2>Login de Usuário</h2>
-    <p>Informe seus dados para acessar:</p>
+    <a href="index.php" class="btn btn-secondary btn-sm mb-3">&larr; Voltar</a>
+</div>
 
-    <?php if (isset($erro)) { ?>
-        <div class="alert alert-danger"><?php echo $erro; ?></div>
-    <?php } ?>
+<!-- Card centralizado com o formulário -->
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="card shadow p-4" style="min-width: 350px; max-width: 500px; width: 100%;">
+        <h2 class="mb-3">Login de Usuário</h2>
+        <p>Informe seus dados para acessar:</p>
 
-    <form method="POST" action="login.php">
+        <?php if (isset($erro)) { ?>
+            <div class="alert alert-danger"><?php echo $erro; ?></div>
+        <?php } ?>
 
-        <input
-            type="email"
-            name="email"
-            class="form-control mb-2"
-            placeholder="Email cadastrado"
-            required>
+        <form method="POST" action="login.php">
+            <input
+                type="email"
+                name="email"
+                class="form-control mb-2"
+                placeholder="Email cadastrado"
+                required>
 
-        <input
-            type="password"
-            name="senha"
-            class="form-control mb-2"
-            placeholder="Senha"
-            required>
+            <input
+                type="password"
+                name="senha"
+                class="form-control mb-3"
+                placeholder="Senha"
+                required>
 
-        <button type="submit" class="btn btn-primary">Entrar</button>
-
-    </form>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+    </div>
 </div>
 
 </body>

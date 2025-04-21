@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
+include "header.php";
 // Incluir o arquivo de conexão com o banco de dados
 include_once 'conecta_db.php'; 
 
@@ -34,6 +40,7 @@ if (!$result) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+
 
 <div class="container mt-3">
     <h2>Lista de Perguntas</h2>

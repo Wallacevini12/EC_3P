@@ -1,3 +1,19 @@
+<?php
+
+session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
+
+include "header.php";
+
+
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

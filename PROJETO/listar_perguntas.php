@@ -10,12 +10,11 @@ if ($oMysql->connect_error) {
 
 // Consultar todas as perguntas no banco
 $query = "
-   SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina, r.resposta
+    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina, r.resposta
     FROM perguntas p
     JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-    WHERE r.resposta IS NOT NULL
     ORDER BY p.data_criacao DESC
 ";
 
@@ -37,6 +36,7 @@ if (!$result) {
 </head>
 <body>
 
+
 <div class="container mt-3">
     <h2>Lista de Perguntas</h2>
 
@@ -49,19 +49,20 @@ if (!$result) {
                     <th>Aluno</th>
                     <th>Disciplina</th>
                     <th>Data da Pergunta</th>
+                    <th>Ação</th>
                 </tr>
             </thead>
             <tbody>
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <tr>
                         <td><?= $row['codigo_pergunta'] ?></td>
-                        <td><?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars(substr($row['enunciado'], 0, 100)) . (strlen($row['enunciado']) > 100 ? '...' : '') ?></td>
                         <td><?= htmlspecialchars($row['nome_aluno'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
                         <td>
-                               <!-- Botão para abrir o modal e mostrar a pergunta e resposta -->
-                               <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
+                            <!-- Botão para abrir o modal e mostrar a pergunta e resposta -->
+                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
                         </td>
                     </tr>
 
@@ -70,17 +71,17 @@ if (!$result) {
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">Pergunta e Resposta</h5>
+                                    <!-- Exibe a pergunta como título do modal -->
+                                    <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">
+                                        <?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?>
+                                    </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-
-                                    <!-- Exibe a pergunta -->
-                                    <p><strong>Pergunta:</strong></p>
-                                    <p><?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?></p>
-                                    
+                                
                                     <!-- Exibe a resposta da pergunta -->
-                                    <p><strong>Resposta:</strong> <?= htmlspecialchars($row['resposta'], ENT_QUOTES, 'UTF-8') ?></p>
+                                    <p><strong>Resposta:</strong></p>
+                                    <p><?= htmlspecialchars($row['resposta'], ENT_QUOTES, 'UTF-8') ?></p>
                                 </div>
                             </div>
                         </div>
@@ -92,7 +93,6 @@ if (!$result) {
         <p class="alert alert-info">Nenhuma pergunta registrada.</p>
     <?php endif; ?>
 
-    
 </div>
 
 </body>

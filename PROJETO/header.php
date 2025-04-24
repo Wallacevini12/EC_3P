@@ -24,26 +24,32 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Marca -->
     <a class="navbar-brand" href="index.php"><i class="bi bi-lightning-fill"></i> LearnHub</a>
 
-    <!-- Menu à esquerda -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav">
-        <li class="nav-item active">
-          <a class="nav-link" href="index.php"><i class="bi bi-house-door-fill"></i> Home</a>
+<!-- Menu à esquerda -->
+<div class="collapse navbar-collapse" id="navbarNav">
+  <ul class="navbar-nav">
+    <li class="nav-item active">
+      <a class="nav-link" href="index.php"><i class="bi bi-house-door-fill"></i> Home</a>
+    </li>
+    
+    <?php if (isset($_SESSION['id'])): ?>
+      <li class="nav-item">
+        <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
+      </li>
+
+      <!-- Mostrar "Fazer Pergunta" apenas se o usuário for aluno -->
+      <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
+        <li class="nav-item">
+          <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
         </li>
-        <?php if (isset($_SESSION['id'])): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
-          </li>
-        <?php else: ?>
-          <li class="nav-item">
-            <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-          </li>
-        <?php endif; ?>
-      </ul>
-    </div>
+      <?php endif; ?>
+    
+    <?php else: ?>
+      <li class="nav-item">
+        <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+      </li>
+    <?php endif; ?>
+  </ul>
+</div>
 
     <!-- Menu à direita (ex: logout) -->
     <?php if (isset($_SESSION['id'])): ?>

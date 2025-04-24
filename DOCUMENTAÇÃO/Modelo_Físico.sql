@@ -1,137 +1,151 @@
+-- Criação do schema
 CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
-/*DROP SCHEMA learnhub_ep;*/
--- Tabelas base
+
+DROP SCHEMA learnhub_ep;
+-- Tabela de usuários (base para especializações)
 CREATE TABLE usuarios (
-    id INT AUTO_INCREMENT,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     curso VARCHAR(100),
     senha VARCHAR(255) NOT NULL,
-    tipo_usuario ENUM('aluno', 'professor', 'monitor') NOT NULL,
-    PRIMARY KEY (id)
+    tipo_usuario ENUM('aluno', 'professor', 'monitor') NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS aluno (
+-- Especializações de usuário
+CREATE TABLE aluno (
     id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuarios(id)
+    FOREIGN KEY (id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
-CREATE TABLE IF NOT EXISTS professor (
+
+CREATE TABLE professor (
     id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuarios(id)
+    FOREIGN KEY (id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS monitor (
+CREATE TABLE monitor (
     id INT PRIMARY KEY,
-    FOREIGN KEY (id) REFERENCES usuarios(id)
+    FOREIGN KEY (id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
-
+-- Cursos e Disciplinas
 CREATE TABLE curso (
-    codigo_curso INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    codigo_curso INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nome_curso VARCHAR(90) NOT NULL,
-    duracao_curso INT NOT NULL,
-    PRIMARY KEY (codigo_curso)
+    duracao_curso INT NOT NULL
 );
 
 CREATE TABLE disciplinas (
-    codigo_disciplina INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    codigo_disciplina INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nome_disciplina VARCHAR(90) NOT NULL,
-    modalidade_disciplina VARCHAR(45) NOT NULL,
-    PRIMARY KEY (codigo_disciplina)
+    modalidade_disciplina VARCHAR(45) NOT NULL
 );
 
 CREATE TABLE periodos (
-    numero_periodo INT UNSIGNED NOT NULL,
-    PRIMARY KEY (numero_periodo)
+    numero_periodo INT UNSIGNED PRIMARY KEY
 );
 
--- Tabela perguntas
+-- Perguntas e respostas
 CREATE TABLE perguntas (
-    codigo_pergunta INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    codigo_pergunta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     enunciado TEXT NOT NULL,
     data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usuario_codigo INT NOT NULL,
     disciplina_codigo INT UNSIGNED NOT NULL,
-    PRIMARY KEY (codigo_pergunta),
-    FOREIGN KEY (usuario_codigo) REFERENCES usuarios(id),
-    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina)
+    FOREIGN KEY (usuario_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
--- Relacionamentos
+CREATE TABLE respostas (
+    codigo_resposta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    codigo_pergunta INT UNSIGNED NOT NULL,
+    resposta TEXT NOT NULL,
+    data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (codigo_pergunta) REFERENCES perguntas(codigo_pergunta) ON DELETE CASCADE
+);
+
+-- Relacionamentos N:N
+
+-- Alunos em disciplinas
 CREATE TABLE alunos_possuem_disciplinas (
     aluno_codigo INT NOT NULL,
     disciplina_codigo INT UNSIGNED NOT NULL,
-    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id),
-    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina)
+    PRIMARY KEY (aluno_codigo, disciplina_codigo),
+    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
+-- Alunos em cursos
 CREATE TABLE alunos_possuem_cursos (
     aluno_codigo INT NOT NULL,
     curso_codigo INT UNSIGNED NOT NULL,
-    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id),
-    FOREIGN KEY (curso_codigo) REFERENCES curso(codigo_curso)
+    PRIMARY KEY (aluno_codigo, curso_codigo),
+    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (curso_codigo) REFERENCES curso(codigo_curso) ON DELETE CASCADE
 );
 
+-- Professores em cursos
 CREATE TABLE cursos_possuem_professores (
     curso_codigo INT UNSIGNED NOT NULL,
     professor_codigo INT NOT NULL,
-    FOREIGN KEY (curso_codigo) REFERENCES curso(codigo_curso),
-    FOREIGN KEY (professor_codigo) REFERENCES usuarios(id)
+    PRIMARY KEY (curso_codigo, professor_codigo),
+    FOREIGN KEY (curso_codigo) REFERENCES curso(codigo_curso) ON DELETE CASCADE,
+    FOREIGN KEY (professor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
+-- Professores em disciplinas
 CREATE TABLE professores_possuem_disciplinas (
     professor_codigo INT NOT NULL,
     disciplina_codigo INT UNSIGNED NOT NULL,
-    FOREIGN KEY (professor_codigo) REFERENCES usuarios(id),
-    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina)
+    PRIMARY KEY (professor_codigo, disciplina_codigo),
+    FOREIGN KEY (professor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
+-- Monitores em disciplinas
 CREATE TABLE disciplinas_possuem_monitores (
     disciplina_codigo INT UNSIGNED NOT NULL,
     monitor_codigo INT NOT NULL,
-    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina),
-    FOREIGN KEY (monitor_codigo) REFERENCES usuarios(id)
+    PRIMARY KEY (disciplina_codigo, monitor_codigo),
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE,
+    FOREIGN KEY (monitor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
+-- Monitores em períodos
 CREATE TABLE periodos_possuem_monitores (
     numero_periodo INT UNSIGNED NOT NULL,
     codigo_monitor INT NOT NULL,
-    FOREIGN KEY (numero_periodo) REFERENCES periodos(numero_periodo),
-    FOREIGN KEY (codigo_monitor) REFERENCES usuarios(id)
+    PRIMARY KEY (numero_periodo, codigo_monitor),
+    FOREIGN KEY (numero_periodo) REFERENCES periodos(numero_periodo) ON DELETE CASCADE,
+    FOREIGN KEY (codigo_monitor) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
+-- Aluno fez uma pergunta
 CREATE TABLE aluno_possui_pergunta (
     aluno_codigo INT NOT NULL,
     pergunta_codigo INT UNSIGNED NOT NULL,
     PRIMARY KEY (aluno_codigo, pergunta_codigo),
-    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id),
-    FOREIGN KEY (pergunta_codigo) REFERENCES perguntas(codigo_pergunta)
+    FOREIGN KEY (aluno_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (pergunta_codigo) REFERENCES perguntas(codigo_pergunta) ON DELETE CASCADE
 );
 
+-- Pergunta associada a disciplina
 CREATE TABLE pergunta_possui_disciplina (
     pergunta_codigo INT UNSIGNED NOT NULL,
     disciplina_codigo INT UNSIGNED NOT NULL,
     PRIMARY KEY (pergunta_codigo, disciplina_codigo),
-    FOREIGN KEY (pergunta_codigo) REFERENCES perguntas(codigo_pergunta),
-    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina)
-);
--- Tabela de respostas
-CREATE TABLE IF NOT EXISTS respostas (
-    codigo_resposta INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    codigo_pergunta INT UNSIGNED NOT NULL,
-    resposta TEXT NOT NULL,
-    data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (codigo_pergunta) REFERENCES perguntas(codigo_pergunta)
+    FOREIGN KEY (pergunta_codigo) REFERENCES perguntas(codigo_pergunta) ON DELETE CASCADE,
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
-
--- Inserts na tabela periodos
+-- Dados iniciais para períodos e disciplinas
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
-INSERT INTO disciplinas VALUES
-  ('1','Engenharia de software', 'EAD'),
-  ('2', 'Sistemas de Informação', 'EAD'),
-  ('3', 'Análise e Desenvolvimento de Sistemas', 'EAD'),
-  ('4', 'Ciência da Computação', 'EAD'),
-  ('5', 'Redes de Computadores', 'EAD');
+
+INSERT INTO disciplinas (codigo_disciplina, nome_disciplina, modalidade_disciplina) VALUES
+    (1, 'Engenharia de Software', 'EAD'),
+    (2, 'Sistemas de Informação', 'EAD'),
+    (3, 'Análise e Desenvolvimento de Sistemas', 'EAD'),
+    (4, 'Ciência da Computação', 'EAD'),
+    (5, 'Redes de Computadores', 'EAD');

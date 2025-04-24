@@ -47,7 +47,7 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 $_SESSION['codigo_aluno'] = $codigo_aluno;
                 $stmtAluno->close();
 
-                header('Location: registrar_pergunta.php');
+                header('Location: home_aluno.php');
                 exit;
 
             } elseif ($user['tipo_usuario'] === 'professor') {

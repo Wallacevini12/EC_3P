@@ -62,11 +62,48 @@ if (
         $stmt2->bind_param("i", $usuario_id);
 
         if ($stmt2->execute()) {
-            echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.html';</script>";
-            exit;
-        } else {
-            echo "Erro ao cadastrar tipo específico: " . $stmt2->error;
-        }
+          // Preenche tabelas intermediárias
+          if ($tipo_usuario === 'aluno') {
+              $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
+              $stmt_curso->bind_param("s", $curso);
+              $stmt_curso->execute();
+              $stmt_curso->bind_result($codigo_curso);
+              if ($stmt_curso->fetch()) {
+                  $stmt_curso->close();
+      
+                  $stmt_intermediaria = $oMysql->prepare("INSERT INTO alunos_possuem_cursos (aluno_codigo, curso_codigo) VALUES (?, ?)");
+                  $stmt_intermediaria->bind_param("ii", $usuario_id, $codigo_curso);
+                  $stmt_intermediaria->execute();
+                  $stmt_intermediaria->close();
+              } else {
+                  echo "Curso não encontrado.";
+                  exit;
+              }
+      
+          } elseif ($tipo_usuario === 'professor') {
+              $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
+              $stmt_curso->bind_param("s", $curso);
+              $stmt_curso->execute();
+              $stmt_curso->bind_result($codigo_curso);
+              if ($stmt_curso->fetch()) {
+                  $stmt_curso->close();
+      
+                  $stmt_intermediaria = $oMysql->prepare("INSERT INTO cursos_possuem_professores (curso_codigo, professor_codigo) VALUES (?, ?)");
+                  $stmt_intermediaria->bind_param("ii", $codigo_curso, $usuario_id);
+                  $stmt_intermediaria->execute();
+                  $stmt_intermediaria->close();
+              } else {
+                  echo "Curso não encontrado.";
+                  exit;
+              }
+          }
+      
+          echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.html';</script>";
+          exit;
+      
+      } else {
+          echo "Erro ao cadastrar tipo específico: " . $stmt2->error;
+      }
         $stmt2->close();
     } else {
         echo "Erro ao cadastrar: " . $stmt->error;

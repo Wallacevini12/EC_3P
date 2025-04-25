@@ -85,6 +85,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
 
     if ($stmt->execute()) {
         echo "Pergunta registrada com sucesso!";
+    
+        // Obter o ID da pergunta recém-inserida
+        $pergunta_id = $stmt->insert_id;
+    
+        // Inserir na tabela aluno_possui_pergunta
+        $stmt_vinculo_aluno = $oMysql->prepare("INSERT INTO aluno_possui_pergunta (aluno_codigo, pergunta_codigo) VALUES (?, ?)");
+        $stmt_vinculo_aluno->bind_param("ii", $aluno_id, $pergunta_id);
+    
+        if (!$stmt_vinculo_aluno->execute()) {
+            echo "<br>Erro ao vincular pergunta ao aluno: " . $stmt_vinculo_aluno->error;
+        }
+        $stmt_vinculo_aluno->close();
+    
+        // Inserir na tabela pergunta_possui_disciplina
+        $stmt_vinculo_disc = $oMysql->prepare("INSERT INTO pergunta_possui_disciplina (pergunta_codigo, disciplina_codigo) VALUES (?, ?)");
+        $stmt_vinculo_disc->bind_param("ii", $pergunta_id, $disciplina_codigo);
+    
+        if (!$stmt_vinculo_disc->execute()) {
+            echo "<br>Erro ao vincular pergunta à disciplina: " . $stmt_vinculo_disc->error;
+        }
+        $stmt_vinculo_disc->close();
+    
     } else {
         echo "Erro ao registrar pergunta: " . $stmt->error;
     }

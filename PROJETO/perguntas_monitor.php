@@ -1,7 +1,12 @@
 <?php
-// Incluir arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; 
+session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
 include "header.php";
+// Incluir o arquivo de conexão com o banco de dados
+include_once 'conecta_db.php'; 
 
 // Conectar ao banco de dados
 $oMysql = conecta_db();
@@ -11,11 +16,10 @@ if ($oMysql->connect_error) {
 
 // Consultar todas as perguntas no banco
 $query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina, r.resposta
+    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
     FROM perguntas p
     JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-    LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
     ORDER BY p.data_criacao DESC
 ";
 
@@ -62,27 +66,32 @@ if (!$result) {
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
                         <td>
-                            <!-- Botão para abrir o modal e mostrar a pergunta e resposta -->
-                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
+                            <!-- Botão para responder -->
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#responderModal<?= $row['codigo_pergunta'] ?>">Responder</button>
                         </td>
                     </tr>
 
-                    <!-- Modal para exibir a pergunta e a resposta -->
-                    <div class="modal fade" id="respostaModal<?= $row['codigo_pergunta'] ?>" tabindex="-1" aria-labelledby="respostaModalLabel<?= $row['codigo_pergunta'] ?>" aria-hidden="true">
+                    <!-- Modal para responder a pergunta -->
+                    <div class="modal fade" id="responderModal<?= $row['codigo_pergunta'] ?>" tabindex="-1" aria-labelledby="responderModalLabel<?= $row['codigo_pergunta'] ?>" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <!-- Exibe a pergunta como título do modal -->
-                                    <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">
-                                        <?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?>
-                                    </h5>
+                                    <h5 class="modal-title" id="responderModalLabel<?= $row['codigo_pergunta'] ?>">Responder à Pergunta</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                
-                                    <!-- Exibe a resposta da pergunta -->
-                                    <p><strong>Resposta:</strong></p>
-                                    <p><?= htmlspecialchars($row['resposta'], ENT_QUOTES, 'UTF-8') ?></p>
+                                    <form method="POST" action="responder_salvar.php">
+                                        <div class="mb-3">
+                                            <label for="pergunta" class="form-label">Pergunta</label>
+                                            <textarea class="form-control" id="pergunta" name="pergunta" rows="4" readonly><?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="resposta" class="form-label">Sua Resposta</label>
+                                            <textarea class="form-control" id="resposta" name="resposta" rows="4" required></textarea>
+                                        </div>
+                                        <input type="hidden" name="codigo_pergunta" value="<?= $row['codigo_pergunta'] ?>">
+                                        <button type="submit" class="btn btn-primary">Enviar Resposta</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -103,3 +112,4 @@ if (!$result) {
 // Fechar a conexão com o banco de dados
 $oMysql->close();
 ?>
+

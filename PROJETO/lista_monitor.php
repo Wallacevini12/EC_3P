@@ -2,6 +2,7 @@
 session_start();
 
 include_once 'conecta_db.php';
+include "header.php";
 
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
@@ -28,8 +29,7 @@ $result = $oMysql->query($sql);
 </head>
 <body>
 
-<div class="container mt-5">
-    <a href="home_professor.php" class="btn btn-secondary mb-3">&larr; Voltar para Home</a>
+<div class="container mt-7">
 
     <h2 class="mb-4">Lista de Monitores</h2>
 

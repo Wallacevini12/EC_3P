@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once 'conecta_db.php';
+include "header.php";
 
 if (!isset($_SESSION['id'])) {
     header("Location: login.php");
@@ -98,7 +99,6 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
 <head>
     <meta charset="UTF-8">
     <title>Minha Conta</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script>
         function confirmarExclusao() {
             var resposta = confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.");

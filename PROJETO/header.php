@@ -85,6 +85,13 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
+          <!-- Mostrar "Perguntas" apenas para monitor -->
+          <?php if ($_SESSION['tipo_usuario'] === 'monitor'): ?>
+            <li class="nav-item">
+              <a class="nav-link" href="perguntas_monitor.php"><i class="bi bi-question-square-fill"></i> Perguntas</a>
+            </li>
+          <?php endif; ?>
+
         <?php else: ?>
           <li class="nav-item">
             <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>

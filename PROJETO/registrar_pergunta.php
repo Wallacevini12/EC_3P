@@ -148,6 +148,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">Registrar Pergunta</button>
                 </div>
+                <div class="d-grid mt-3">
+                    <a href="home_aluno.php" class="btn btn-secondary btn-lg">Voltar para Home</a>
+                </div>
             </form>
         </div>
     </div>

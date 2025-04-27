@@ -13,57 +13,98 @@ if (session_status() === PHP_SESSION_NONE) {
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Bootstrap Icons (via CDN) -->
+  <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
     <!-- Marca -->
-    <a class="navbar-brand" href="index.php"><i class="bi bi-lightning-fill"></i> LearnHub</a>
+    <a class="navbar-brand" href="
+      <?php 
+        if (isset($_SESSION['tipo_usuario'])) {
+          if ($_SESSION['tipo_usuario'] === 'aluno') {
+            echo 'home_aluno.php';
+          } elseif ($_SESSION['tipo_usuario'] === 'professor') {
+            echo 'home_professor.php';
+          } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
+            echo 'home_monitor.php';
+          } else {
+            echo 'index.php';
+          }
+        } else {
+          echo 'index.php';
+        }
+      ?>
+    "><i class="bi bi-lightning-fill"></i> LearnHub</a>
 
-<!-- Menu à esquerda -->
-<div class="collapse navbar-collapse" id="navbarNav">
-  <ul class="navbar-nav">
-    <li class="nav-item active">
-      <a class="nav-link" href="index.php"><i class="bi bi-house-door-fill"></i> Home</a>
-    </li>
-    
-    <?php if (isset($_SESSION['id'])): ?>
-      <li class="nav-item">
-        <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
-      </li>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-      <!-- Mostrar "Fazer Pergunta" apenas se o usuário for aluno -->
-      <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
+    <!-- Menu -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
         <li class="nav-item">
-          <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
+          <a class="nav-link" href="
+            <?php 
+              if (isset($_SESSION['tipo_usuario'])) {
+                if ($_SESSION['tipo_usuario'] === 'aluno') {
+                  echo 'home_aluno.php';
+                } elseif ($_SESSION['tipo_usuario'] === 'professor') {
+                  echo 'home_professor.php';
+                } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
+                  echo 'home_monitor.php';
+                } else {
+                  echo 'index.php';
+                }
+              } else {
+                echo 'index.php';
+              }
+            ?>
+          "><i class="bi bi-house-door-fill"></i> Home</a>
         </li>
-      <?php endif; ?>
-    
-    <?php else: ?>
-      <li class="nav-item">
-        <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-      </li>
-    <?php endif; ?>
-  </ul>
-</div>
 
-    <!-- Menu à direita (ex: logout) -->
-    <?php if (isset($_SESSION['id'])): ?>
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Sair</a>
-        </li>
+        <?php if (isset($_SESSION['id'])): ?>
+          <li class="nav-item">
+            <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
+          </li>
+
+          <!-- Mostrar "Fazer Pergunta" apenas para aluno -->
+          <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
+            <li class="nav-item">
+              <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
+            </li>
+          <?php endif; ?>
+
+          <!-- Mostrar "Lista de Monitores" apenas para professor -->
+          <?php if ($_SESSION['tipo_usuario'] === 'professor'): ?>
+            <li class="nav-item">
+              <a class="nav-link" href="lista_monitor.php"><i class="bi bi-people-fill"></i> Lista de Monitores</a>
+            </li>
+          <?php endif; ?>
+
+        <?php else: ?>
+          <li class="nav-item">
+            <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+          </li>
+        <?php endif; ?>
       </ul>
-    <?php endif; ?>
 
+      <!-- Botão de logout na direita -->
+      <?php if (isset($_SESSION['id'])): ?>
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Sair</a>
+          </li>
+        </ul>
+      <?php endif; ?>
+    </div>
   </div>
 </nav>
 
-<!-- Scripts Bootstrap 5 -->
+<!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

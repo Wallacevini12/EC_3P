@@ -98,7 +98,7 @@ if (
               }
           }
       
-          echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.html';</script>";
+          echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.php';</script>";
           exit;
       
       } else {

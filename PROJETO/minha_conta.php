@@ -1,11 +1,23 @@
 <?php
 session_start();
-
 require_once 'conecta_db.php';
 
 if (!isset($_SESSION['id'])) {
     header("Location: login.php");
     exit();
+}
+
+// Define a página de voltar com base no tipo de usuário
+$pagina_voltar = 'index.php'; // valor padrão caso não esteja logado
+
+if (isset($_SESSION['tipo_usuario'])) {
+    if ($_SESSION['tipo_usuario'] === 'aluno') {
+        $pagina_voltar = 'home_aluno.php';
+    } elseif ($_SESSION['tipo_usuario'] === 'professor') {
+        $pagina_voltar = 'home_professor.php';
+    } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
+        $pagina_voltar = 'home_monitor.php';
+    }
 }
 
 $usuario_id = $_SESSION['id'];
@@ -18,11 +30,10 @@ if ($conn->connect_error) {
 
 // Verifica se foi solicitado excluir o usuário
 if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
-    // Inicia a transação
     $conn->begin_transaction();
 
     try {
-        // Exclui registros na tabela 'aluno' (ou qualquer outra tabela que tenha relacionamento com 'usuarios')
+        // Exclui registros nas tabelas relacionadas
         $sql_delete_aluno = "DELETE FROM aluno WHERE id = ?";
         $stmt_delete_aluno = $conn->prepare($sql_delete_aluno);
         if ($stmt_delete_aluno) {
@@ -31,7 +42,6 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
             $stmt_delete_aluno->close();
         }
 
-        // Exclui registros na tabela 'professor'
         $sql_delete_professor = "DELETE FROM professor WHERE id = ?";
         $stmt_delete_professor = $conn->prepare($sql_delete_professor);
         if ($stmt_delete_professor) {
@@ -40,7 +50,7 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
             $stmt_delete_professor->close();
         }
 
-        // Exclui o usuário da tabela 'usuarios'
+        // Exclui o usuário
         $sql_delete_usuario = "DELETE FROM usuarios WHERE id = ?";
         $stmt_delete_usuario = $conn->prepare($sql_delete_usuario);
         if ($stmt_delete_usuario) {
@@ -49,22 +59,19 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
             $stmt_delete_usuario->close();
         }
 
-        // Commit da transação
         $conn->commit();
 
-        // Destroi a sessão e redireciona para a página de cadastro
         session_destroy();
         header("Location: cadastro.php");
         exit();
     } catch (Exception $e) {
-        // Em caso de erro, faz rollback da transação
         $conn->rollback();
         echo "Erro ao excluir o usuário: " . $e->getMessage();
     } finally {
-        $conn->close(); // Fechando a conexão após as operações
+        $conn->close();
     }
 } else {
-    // Busca os dados do usuário
+    // Busca dados do usuário
     $sql = "SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?";
     $stmt = $conn->prepare($sql);
 
@@ -96,7 +103,7 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
         function confirmarExclusao() {
             var resposta = confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.");
             if (resposta) {
-                window.location.href = "minha_conta.php?excluir=sim";  // Redireciona para excluir
+                window.location.href = "minha_conta.php?excluir=sim";
             }
         }
     </script>
@@ -113,10 +120,8 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
 
         <a href="logout.php" class="btn btn-danger">Sair</a>
-        
-        <!-- Botão de exclusão de conta -->
         <button class="btn btn-danger" onclick="confirmarExclusao()">Excluir Conta</button>
-        <a href="index.php" class="btn btn-danger">Voltar</a>
+        <a href="<?= $pagina_voltar ?>" class="btn btn-danger">Voltar</a>
     <?php else: ?>
         <p>Usuário excluído com sucesso. Você será redirecionado para a página de cadastro.</p>
     <?php endif; ?>

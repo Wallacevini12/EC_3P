@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
 
-DROP SCHEMA learnhub_ep;
+--DROP SCHEMA learnhub_ep;
 -- Tabela de usuários (base para especializações)
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -144,8 +144,14 @@ CREATE TABLE pergunta_possui_disciplina (
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
 
 INSERT INTO disciplinas (codigo_disciplina, nome_disciplina, modalidade_disciplina) VALUES
-    (1, 'Engenharia de Software', 'EAD'),
-    (2, 'Sistemas de Informação', 'EAD'),
-    (3, 'Análise e Desenvolvimento de Sistemas', 'EAD'),
-    (4, 'Ciência da Computação', 'EAD'),
-    (5, 'Redes de Computadores', 'EAD');
+    (1, 'Programação Orientada a Objetos', 'EAD'),
+    (2, 'Estruturas de Dados', 'EAD'),
+    (3, 'Redes de Computadores', 'EAD'),
+    (4, 'Modelagem de Software', 'EAD'),
+    (5, 'Gestão de Equipes Ágeis', 'EAD');
+    INSERT INTO curso (nome_curso, duracao_curso) VALUES
+('Engenharia de Software', 8),
+('Sistemas de Informação', 8),
+('Análise e Desenvolvimento de Sistemas', 6),
+('Ciência da Computação', 8),
+('Redes de Computadores', 6);

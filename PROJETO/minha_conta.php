@@ -116,6 +116,7 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
         
         <!-- Botão de exclusão de conta -->
         <button class="btn btn-danger" onclick="confirmarExclusao()">Excluir Conta</button>
+        <a href="index.php" class="btn btn-danger">Voltar</a>
     <?php else: ?>
         <p>Usuário excluído com sucesso. Você será redirecionado para a página de cadastro.</p>
     <?php endif; ?>

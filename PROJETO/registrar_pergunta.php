@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
     $stmt->bind_param("sii", $pergunta, $aluno_id, $disciplina_codigo);
 
     if ($stmt->execute()) {
-        echo "Pergunta registrada com sucesso!";
+        echo  "<script>alert('Pergunta registrada com sucesso!'); window.location.href='registrar_pergunta.php';</script>";
     
         // Obter o ID da pergunta recém-inserida
         $pergunta_id = $stmt->insert_id;

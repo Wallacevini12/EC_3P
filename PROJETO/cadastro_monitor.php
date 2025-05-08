@@ -1,15 +1,28 @@
 <?php
+
+session_start();
 include_once 'conecta_db.php'; // Inclui o arquivo de conexão com o banco
 
 $oMysql = conecta_db();
+
 
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Buscar disciplinas
-$sql = "SELECT codigo_disciplina, nome_disciplina FROM disciplinas";
-$result_disciplina = $oMysql->query($sql);
+
+$professor_id = $_SESSION['id']; // Obtém o ID do professor da sessão
+
+
+// Buscar disciplinas vinculadas ao professor
+$sql = "SELECT d.codigo_disciplina, d.nome_disciplina
+        FROM disciplinas d
+        JOIN professores_possuem_disciplinas p ON d.codigo_disciplina = p.disciplina_codigo
+        WHERE p.professor_codigo = ?";
+$stmt_disciplina = $oMysql->prepare($sql);
+$stmt_disciplina->bind_param("i", $professor_id);
+$stmt_disciplina->execute();
+$result_disciplina = $stmt_disciplina->get_result();
 
 $disciplinas = [];
 if ($result_disciplina && $result_disciplina->num_rows > 0) {
@@ -17,6 +30,7 @@ if ($result_disciplina && $result_disciplina->num_rows > 0) {
         $disciplinas[] = $row;
     }
 }
+$stmt_disciplina->close();
 
 // Verifica se o formulário foi enviado
 if (
@@ -32,9 +46,7 @@ if (
     $curso = $_POST['curso'];
     $disciplina_codigo = $_POST['disciplina'];
 
-
-
-    // Segundo, verificar se o e-mail já existe no banco
+    // Verifica se o e-mail já existe no banco
     $stmt_verifica = $oMysql->prepare("SELECT id FROM usuarios WHERE email = ?");
     $stmt_verifica->bind_param("s", $email);
     $stmt_verifica->execute();
@@ -65,7 +77,7 @@ if (
 
         if ($stmt2->execute()) {
             // Relaciona o monitor à disciplina escolhida
-            $stmt3 = $oMysql->prepare("INSERT INTO disciplinas_possuem_monitores (disciplina_codigo, monitor_codigo) VALUES (?, ?)");
+            $stmt3 = $oMysql->prepare("INSERT INTO monitores_possuem_disciplinas (disciplina_codigo, monitor_codigo) VALUES (?, ?)");
             $stmt3->bind_param("ii", $disciplina_codigo, $usuario_id);
 
             if ($stmt3->execute()) {
@@ -143,11 +155,11 @@ if (
       <select name="disciplina" class="form-select mb-3" required>
         <option value="" disabled selected>Selecione sua disciplina</option>
         <?php foreach ($disciplinas as $disciplina): ?>
-          <option value="<?php echo htmlspecialchars($disciplina['codigo_disciplina']); ?>">
-            <?php echo htmlspecialchars($disciplina['nome_disciplina']); ?>
-          </option>
+            <option value="<?php echo htmlspecialchars($disciplina['codigo_disciplina']); ?>">
+                <?php echo htmlspecialchars($disciplina['nome_disciplina']); ?>
+            </option>
         <?php endforeach; ?>
-      </select>
+    </select>
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>

@@ -90,6 +90,48 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
     }
 
     $dados_usuario = $result->fetch_assoc();
+
+    $disciplinas = [];
+    $tabela_vinculo = '';
+    $coluna_usuario = '';
+
+    switch ($dados_usuario['tipo_usuario']) {
+        case 'professor':
+            $tabela_vinculo = 'professores_possuem_disciplinas';
+            $coluna_usuario = 'professor_codigo';
+            break;
+        case 'aluno':
+            $tabela_vinculo = 'alunos_possuem_disciplinas';
+            $coluna_usuario = 'aluno_codigo';
+            break;
+        case 'monitor':
+            $tabela_vinculo = 'monitores_possuem_disciplinas';
+            $coluna_usuario = 'monitor_codigo';
+            break;
+    }
+
+    if ($tabela_vinculo && $coluna_usuario) {
+        $sql_disciplinas = "
+            SELECT d.nome_disciplina 
+            FROM disciplinas d
+            INNER JOIN $tabela_vinculo vd ON d.codigo_disciplina = vd.disciplina_codigo
+            WHERE vd.$coluna_usuario = ?";
+
+        $stmt_disc = $conn->prepare($sql_disciplinas);
+        if ($stmt_disc) {
+            $stmt_disc->bind_param("i", $usuario_id);
+            $stmt_disc->execute();
+            $result_disc = $stmt_disc->get_result();
+
+            while ($row = $result_disc->fetch_assoc()) {
+                $disciplinas[] = $row['nome_disciplina'];
+            }
+
+            $stmt_disc->close();
+        }
+    }
+
+
     $stmt->close();
 }
 ?>
@@ -119,6 +161,18 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
 
+        <?php if (!empty($disciplinas)): ?>
+            <p><strong>Disciplinas Vinculadas:</strong></p>
+            <ul>
+                <?php foreach ($disciplinas as $disciplina): ?>
+                    <li><?= htmlspecialchars($disciplina) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p><strong>Disciplinas Vinculadas:</strong> Nenhuma disciplina vinculada.</p>
+        <?php endif; ?>
+
+        
         <a href="logout.php" class="btn btn-danger">Sair</a>
         <button class="btn btn-danger" onclick="confirmarExclusao()">Excluir Conta</button>
         <a href="<?= $pagina_voltar ?>" class="btn btn-danger">Voltar</a>

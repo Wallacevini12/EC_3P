@@ -77,6 +77,16 @@ CREATE TABLE alunos_possuem_disciplinas (
     FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
+CREATE TABLE monitores_possuem_disciplinas (
+    monitor_codigo INT NOT NULL,
+    disciplina_codigo INT UNSIGNED NOT NULL,
+    PRIMARY KEY (monitor_codigo, disciplina_codigo),
+    FOREIGN KEY (monitor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
+);
+
+
+
 -- Alunos em cursos
 CREATE TABLE alunos_possuem_cursos (
     aluno_codigo INT NOT NULL,

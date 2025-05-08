@@ -45,6 +45,8 @@ if (
     }
     $stmt_check->close();
 
+
+
     // Prepara a inserção na tabela 'usuarios'
     $stmt = $oMysql->prepare("INSERT INTO usuarios (nome, email, senha, tipo_usuario, curso) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sssss", $nome, $email, $senha_hash, $tipo_usuario, $curso);
@@ -60,6 +62,36 @@ if (
             $stmt2 = $oMysql->prepare("INSERT INTO professor (id) VALUES (?)");
         }
 
+        if ($tipo_usuario === 'aluno' && isset($_POST['disciplinas'])) {
+          $disciplinas = $_POST['disciplinas'];
+          $stmt = $oMysql->prepare("INSERT INTO alunos_possuem_disciplinas (aluno_codigo, disciplina_codigo) VALUES (?, ?)");
+      
+          foreach ($disciplinas as $disciplina_id) {
+              $disciplina_id = intval($disciplina_id); // Segurança básica
+              $stmt->bind_param("ii", $usuario_id, $disciplina_id);
+              $stmt->execute();
+          }
+      
+          $stmt->close();
+      }
+
+      // Para professores, vamos permitir que escolham disciplinas também
+      if ($tipo_usuario === 'professor' && isset($_POST['disciplinas'])) {
+        $disciplinas = $_POST['disciplinas'];
+        
+        // Prepara o statement para inserir as disciplinas do professor
+        $stmt = $oMysql->prepare("INSERT INTO professores_possuem_disciplinas (professor_codigo, disciplina_codigo) VALUES (?, ?)");
+        
+        foreach ($disciplinas as $disciplina_id) {
+            $disciplina_id = intval($disciplina_id); // Garantir que o valor da disciplina seja um número inteiro
+            $stmt->bind_param("ii", $usuario_id, $disciplina_id);
+            $stmt->execute();
+        }
+
+        $stmt->close();
+      }
+
+        
         $stmt2->bind_param("i", $usuario_id);
 
         if ($stmt2->execute()) {
@@ -166,6 +198,33 @@ if (
         <option value="Ciência da Computação">Ciência da Computação</option>
         <option value="Redes de Computadores">Redes de Computadores</option>
       </select>
+
+
+      <!-- Carregar disciplinas do banco -->
+      <?php
+        require_once 'conecta_db.php';
+        $oMysql = conecta_db();
+
+        // Carregar disciplinas do banco
+        $disciplinas = [];
+        $result = $oMysql->query("SELECT codigo_disciplina, nome_disciplina FROM disciplinas");
+        while ($row = $result->fetch_assoc()) {
+            $disciplinas[] = $row;
+        }
+      ?>
+
+      <!-- Inserir no formulário de cadastro -->
+      <div class="mb-3">
+        <label for="disciplinas" class="form-label">Disciplinas</label><br>
+        <?php foreach ($disciplinas as $disciplina): ?>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="disciplinas[]" value="<?= $disciplina['codigo_disciplina'] ?>" id="disciplina<?= $disciplina['codigo_disciplina'] ?>">
+            <label class="form-check-label" for="disciplina<?= $disciplina['codigo_disciplina'] ?>">
+              <?= htmlspecialchars($disciplina['nome_disciplina']) ?>
+            </label>
+          </div>
+        <?php endforeach; ?>
+      </div>
 
       <input type="hidden" name="tipo_usuario_url" value="<?php echo htmlspecialchars($tipo_usuario); ?>">
 

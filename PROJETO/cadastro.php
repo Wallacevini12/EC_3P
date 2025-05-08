@@ -2,6 +2,15 @@
 // Incluindo o arquivo de conexão com o banco de dados
 require_once 'conecta_db.php'; 
 
+
+// Obtém o tipo de usuário via URL do index.php
+if (isset($_GET['tipo']) && in_array($_GET['tipo'], ['aluno', 'professor'])) {
+  $tipo_usuario = $_GET['tipo'];
+} else {
+  echo "<script>alert('Tipo de usuário inválido ou não especificado.'); window.location.href = 'index.php';</script>";
+  exit;
+}
+
 if (
     isset($_POST['nome']) &&
     isset($_POST['email']) &&
@@ -13,25 +22,6 @@ if (
     $senha = $_POST['senha'];
     $curso = $_POST['curso'];
 
-    // Validação de e-mail para monitor
-    if (strpos($email, '@monitor') !== false) {
-        echo "<script>alert('Apenas professor pode realizar o cadastro de monitor'); window.location.href = 'cadastro.php';</script>";
-        // Limpa as variáveis
-        unset($nome, $email, $senha, $curso);
-        exit;
-    }
-
-    // Verifica o tipo de usuário pelo e-mail
-    if (strpos($email, '@aluno') !== false) {
-        $tipo_usuario = 'aluno';
-    } elseif (strpos($email, '@professor') !== false) {
-        $tipo_usuario = 'professor';
-    } else {
-        echo "<script>alert('E-mail inválido. Use @aluno ou @professor'); window.location.href = 'cadastro.php';</script>";
-        // Limpa as variáveis
-        unset($nome, $email, $senha, $curso);
-        exit;
-    }
 
     // Gera o hash da senha para armazenamento seguro
     $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
@@ -43,6 +33,17 @@ if (
         echo "Erro de conexão: " . $oMysql->connect_error;
         exit;
     }
+
+    $stmt_check = $oMysql->prepare("SELECT id FROM usuarios WHERE email = ?");
+    $stmt_check->bind_param("s", $email);
+    $stmt_check->execute();
+    $stmt_check->store_result();
+
+    if ($stmt_check->num_rows > 0) {
+        echo "<script>alert('E-mail já cadastrado.'); window.history.back();</script>";
+        exit;
+    }
+    $stmt_check->close();
 
     // Prepara a inserção na tabela 'usuarios'
     $stmt = $oMysql->prepare("INSERT INTO usuarios (nome, email, senha, tipo_usuario, curso) VALUES (?, ?, ?, ?, ?)");
@@ -134,7 +135,8 @@ if (
     <h2 class="mb-3">Cadastro de Usuário</h2>
     <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
 
-    <form method="POST" action="cadastro.php">
+    <form method="POST" action="cadastro.php?tipo=<?php echo htmlspecialchars($tipo_usuario); ?>">
+
       <input
         type="text"
         name="nome"
@@ -164,6 +166,9 @@ if (
         <option value="Ciência da Computação">Ciência da Computação</option>
         <option value="Redes de Computadores">Redes de Computadores</option>
       </select>
+
+      <input type="hidden" name="tipo_usuario_url" value="<?php echo htmlspecialchars($tipo_usuario); ?>">
+
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>

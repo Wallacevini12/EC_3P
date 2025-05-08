@@ -32,11 +32,7 @@ if (
     $curso = $_POST['curso'];
     $disciplina_codigo = $_POST['disciplina'];
 
-    // Primeiro, verificar se o e-mail termina com '@monitor'
-    if (strpos($email, '@monitor') === false) {
-        echo "<script>alert('E-mail inválido. O e-mail deve conter @monitor. Tente novamente.'); window.history.back();</script>";
-        exit;
-    }
+
 
     // Segundo, verificar se o e-mail já existe no banco
     $stmt_verifica = $oMysql->prepare("SELECT id FROM usuarios WHERE email = ?");
@@ -111,7 +107,7 @@ if (
   <div class="card shadow p-4" style="min-width: 400px; max-width: 500px; width: 100%;">
 
     <h2 class="mb-3">Cadastrar Monitor</h2>
-    <p class="mb-4">Preencha os campos abaixo (e-mail com domínio de monitor):</p>    
+    <p class="mb-4">Preencha os campos abaixo para cadastrar um monitor:</p> 
 
     <form method="POST" action="index.php?page=3">
       <input

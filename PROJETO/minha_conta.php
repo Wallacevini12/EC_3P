@@ -8,8 +8,7 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-// Define a página de voltar com base no tipo de usuário
-$pagina_voltar = 'index.php'; // valor padrão caso não esteja logado
+$pagina_voltar = 'index.php';
 
 if (isset($_SESSION['tipo_usuario'])) {
     if ($_SESSION['tipo_usuario'] === 'aluno') {
@@ -22,117 +21,117 @@ if (isset($_SESSION['tipo_usuario'])) {
 }
 
 $usuario_id = $_SESSION['id'];
+$tipo_usuario = $_SESSION['tipo_usuario'];
+
 $conn = conecta_db();
 
-// Verifica conexão
 if ($conn->connect_error) {
     die("Erro na conexão: " . $conn->connect_error);
 }
 
-// Verifica se foi solicitado excluir o usuário
+// Identifica tabela e coluna conforme tipo de usuário
+$tabela_vinculo = '';
+$coluna_usuario = '';
+
+switch ($tipo_usuario) {
+    case 'professor':
+        $tabela_vinculo = 'professores_possuem_disciplinas';
+        $coluna_usuario = 'professor_codigo';
+        break;
+    case 'aluno':
+        $tabela_vinculo = 'alunos_possuem_disciplinas';
+        $coluna_usuario = 'aluno_codigo';
+        break;
+    case 'monitor':
+        $tabela_vinculo = 'monitores_possuem_disciplinas';
+        $coluna_usuario = 'monitor_codigo';
+        break;
+}
+
+// Atualiza disciplinas se o formulário foi enviado
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disciplinas'])) {
+    $disciplinas_selecionadas = $_POST['disciplinas'];
+
+    $sql_delete = "DELETE FROM $tabela_vinculo WHERE $coluna_usuario = ?";
+    $stmt_delete = $conn->prepare($sql_delete);
+    $stmt_delete->bind_param("i", $usuario_id);
+    $stmt_delete->execute();
+
+    $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
+    $stmt_insert = $conn->prepare($sql_insert);
+    foreach ($disciplinas_selecionadas as $codigo) {
+        $stmt_insert->bind_param("ii", $usuario_id, $codigo);
+        $stmt_insert->execute();
+    }
+}
+
+// Exclusão de conta
 if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
     $conn->begin_transaction();
 
     try {
-        // Exclui registros nas tabelas relacionadas
         $sql_delete_aluno = "DELETE FROM aluno WHERE id = ?";
-        $stmt_delete_aluno = $conn->prepare($sql_delete_aluno);
-        if ($stmt_delete_aluno) {
-            $stmt_delete_aluno->bind_param("i", $usuario_id);
-            $stmt_delete_aluno->execute();
-            $stmt_delete_aluno->close();
-        }
+        $stmt = $conn->prepare($sql_delete_aluno);
+        $stmt->bind_param("i", $usuario_id);
+        $stmt->execute();
 
-        $sql_delete_professor = "DELETE FROM professor WHERE id = ?";
-        $stmt_delete_professor = $conn->prepare($sql_delete_professor);
-        if ($stmt_delete_professor) {
-            $stmt_delete_professor->bind_param("i", $usuario_id);
-            $stmt_delete_professor->execute();
-            $stmt_delete_professor->close();
-        }
+        $sql_delete_prof = "DELETE FROM professor WHERE id = ?";
+        $stmt = $conn->prepare($sql_delete_prof);
+        $stmt->bind_param("i", $usuario_id);
+        $stmt->execute();
 
-        // Exclui o usuário
-        $sql_delete_usuario = "DELETE FROM usuarios WHERE id = ?";
-        $stmt_delete_usuario = $conn->prepare($sql_delete_usuario);
-        if ($stmt_delete_usuario) {
-            $stmt_delete_usuario->bind_param("i", $usuario_id);
-            $stmt_delete_usuario->execute();
-            $stmt_delete_usuario->close();
-        }
+        $sql_delete_user = "DELETE FROM usuarios WHERE id = ?";
+        $stmt = $conn->prepare($sql_delete_user);
+        $stmt->bind_param("i", $usuario_id);
+        $stmt->execute();
 
         $conn->commit();
-
         session_destroy();
         header("Location: cadastro.php");
         exit();
     } catch (Exception $e) {
         $conn->rollback();
         echo "Erro ao excluir o usuário: " . $e->getMessage();
-    } finally {
-        $conn->close();
     }
-} else {
-    // Busca dados do usuário
-    $sql = "SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?";
-    $stmt = $conn->prepare($sql);
+}
 
-    if (!$stmt) {
-        die("Erro na preparação da consulta: " . $conn->error);
-    }
+// Busca dados do usuário
+$sql = "SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $usuario_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    $stmt->bind_param("i", $usuario_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+if ($result->num_rows === 0) {
+    echo "Usuário não encontrado.";
+    exit();
+}
 
-    if ($result->num_rows === 0) {
-        echo "Usuário não encontrado.";
-        exit();
-    }
+$dados_usuario = $result->fetch_assoc();
 
-    $dados_usuario = $result->fetch_assoc();
+// Pega disciplinas atuais
+$disciplinas = [];
+$sql_disciplinas = "
+    SELECT d.nome_disciplina, d.codigo_disciplina
+    FROM disciplinas d
+    INNER JOIN $tabela_vinculo vd ON d.codigo_disciplina = vd.disciplina_codigo
+    WHERE vd.$coluna_usuario = ?";
+$stmt_disc = $conn->prepare($sql_disciplinas);
+$stmt_disc->bind_param("i", $usuario_id);
+$stmt_disc->execute();
+$res_disc = $stmt_disc->get_result();
+$disciplinas_usuario_codigos = [];
 
-    $disciplinas = [];
-    $tabela_vinculo = '';
-    $coluna_usuario = '';
+while ($row = $res_disc->fetch_assoc()) {
+    $disciplinas[] = $row['nome_disciplina'];
+    $disciplinas_usuario_codigos[] = $row['codigo_disciplina'];
+}
 
-    switch ($dados_usuario['tipo_usuario']) {
-        case 'professor':
-            $tabela_vinculo = 'professores_possuem_disciplinas';
-            $coluna_usuario = 'professor_codigo';
-            break;
-        case 'aluno':
-            $tabela_vinculo = 'alunos_possuem_disciplinas';
-            $coluna_usuario = 'aluno_codigo';
-            break;
-        case 'monitor':
-            $tabela_vinculo = 'monitores_possuem_disciplinas';
-            $coluna_usuario = 'monitor_codigo';
-            break;
-    }
-
-    if ($tabela_vinculo && $coluna_usuario) {
-        $sql_disciplinas = "
-            SELECT d.nome_disciplina 
-            FROM disciplinas d
-            INNER JOIN $tabela_vinculo vd ON d.codigo_disciplina = vd.disciplina_codigo
-            WHERE vd.$coluna_usuario = ?";
-
-        $stmt_disc = $conn->prepare($sql_disciplinas);
-        if ($stmt_disc) {
-            $stmt_disc->bind_param("i", $usuario_id);
-            $stmt_disc->execute();
-            $result_disc = $stmt_disc->get_result();
-
-            while ($row = $result_disc->fetch_assoc()) {
-                $disciplinas[] = $row['nome_disciplina'];
-            }
-
-            $stmt_disc->close();
-        }
-    }
-
-
-    $stmt->close();
+// Todas as disciplinas disponíveis
+$todas_disciplinas = [];
+$res = $conn->query("SELECT codigo_disciplina, nome_disciplina FROM disciplinas");
+while ($row = $res->fetch_assoc()) {
+    $todas_disciplinas[] = $row;
 }
 ?>
 
@@ -141,12 +140,17 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
 <head>
     <meta charset="UTF-8">
     <title>Minha Conta</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <script>
         function confirmarExclusao() {
-            var resposta = confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.");
-            if (resposta) {
+            if (confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
                 window.location.href = "minha_conta.php?excluir=sim";
             }
+        }
+
+        function toggleFormulario() {
+            const form = document.getElementById('formEditarDisciplinas');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
     </script>
 </head>
@@ -161,18 +165,40 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
 
+        <p><strong>Disciplinas Vinculadas:</strong></p>
         <?php if (!empty($disciplinas)): ?>
-            <p><strong>Disciplinas Vinculadas:</strong></p>
             <ul>
-                <?php foreach ($disciplinas as $disciplina): ?>
-                    <li><?= htmlspecialchars($disciplina) ?></li>
+                <?php foreach ($disciplinas as $disc): ?>
+                    <li><?= htmlspecialchars($disc) ?></li>
                 <?php endforeach; ?>
             </ul>
         <?php else: ?>
-            <p><strong>Disciplinas Vinculadas:</strong> Nenhuma disciplina vinculada.</p>
+            <p>Nenhuma disciplina vinculada.</p>
         <?php endif; ?>
 
-        
+        <!-- Botão para abrir o formulário -->
+        <button class="btn btn-warning" onclick="toggleFormulario()">Editar Disciplinas</button>
+
+        <!-- Formulário de edição -->
+        <div id="formEditarDisciplinas" style="display:none; margin-top:15px;">
+            <form method="POST">
+                <?php foreach ($todas_disciplinas as $disc): ?>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="disciplinas[]"
+                            value="<?= $disc['codigo_disciplina'] ?>"
+                            <?= in_array($disc['codigo_disciplina'], $disciplinas_usuario_codigos) ? 'checked' : '' ?>>
+                        <label class="form-check-label">
+                            <?= htmlspecialchars($disc['nome_disciplina']) ?>
+                        </label>
+                    </div>
+                <?php endforeach; ?>
+                <br>
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <button type="button" class="btn btn-secondary" onclick="toggleFormulario()">Cancelar</button>
+            </form>
+        </div>
+
+        <br><br>
         <a href="logout.php" class="btn btn-danger">Sair</a>
         <button class="btn btn-danger" onclick="confirmarExclusao()">Excluir Conta</button>
         <a href="<?= $pagina_voltar ?>" class="btn btn-danger">Voltar</a>

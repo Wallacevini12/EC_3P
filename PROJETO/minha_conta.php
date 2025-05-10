@@ -49,19 +49,30 @@ switch ($tipo_usuario) {
 }
 
 // Atualiza disciplinas se o formulário foi enviado
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['disciplinas'])) {
-    $disciplinas_selecionadas = $_POST['disciplinas'];
-
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Remove vínculos antigos
     $sql_delete = "DELETE FROM $tabela_vinculo WHERE $coluna_usuario = ?";
     $stmt_delete = $conn->prepare($sql_delete);
     $stmt_delete->bind_param("i", $usuario_id);
     $stmt_delete->execute();
 
-    $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
-    $stmt_insert = $conn->prepare($sql_insert);
-    foreach ($disciplinas_selecionadas as $codigo) {
+    // Monitor: aceita apenas uma disciplina
+    if ($tipo_usuario === 'monitor' && isset($_POST['disciplina'])) {
+        $codigo = (int) $_POST['disciplina'];
+        $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
         $stmt_insert->bind_param("ii", $usuario_id, $codigo);
         $stmt_insert->execute();
+
+    // Aluno e professor: múltiplas disciplinas
+    } elseif (in_array($tipo_usuario, ['aluno', 'professor']) && isset($_POST['disciplinas'])) {
+        $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
+        $stmt_insert = $conn->prepare($sql_insert);
+        foreach ($_POST['disciplinas'] as $codigo) {
+            $codigo = (int) $codigo;
+            $stmt_insert->bind_param("ii", $usuario_id, $codigo);
+            $stmt_insert->execute();
+        }
     }
 }
 
@@ -176,7 +187,6 @@ while ($row = $res->fetch_assoc()) {
             <p>Nenhuma disciplina vinculada.</p>
         <?php endif; ?>
 
-        <!-- Botão para abrir o formulário -->
         <button class="btn btn-warning" onclick="toggleFormulario()">Editar Disciplinas</button>
 
         <!-- Formulário de edição -->
@@ -184,9 +194,15 @@ while ($row = $res->fetch_assoc()) {
             <form method="POST">
                 <?php foreach ($todas_disciplinas as $disc): ?>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="disciplinas[]"
-                            value="<?= $disc['codigo_disciplina'] ?>"
-                            <?= in_array($disc['codigo_disciplina'], $disciplinas_usuario_codigos) ? 'checked' : '' ?>>
+                        <?php if ($tipo_usuario === 'monitor'): ?>
+                            <input class="form-check-input" type="radio" name="disciplina"
+                                value="<?= $disc['codigo_disciplina'] ?>"
+                                <?= in_array($disc['codigo_disciplina'], $disciplinas_usuario_codigos) ? 'checked' : '' ?>>
+                        <?php else: ?>
+                            <input class="form-check-input" type="checkbox" name="disciplinas[]"
+                                value="<?= $disc['codigo_disciplina'] ?>"
+                                <?= in_array($disc['codigo_disciplina'], $disciplinas_usuario_codigos) ? 'checked' : '' ?>>
+                        <?php endif; ?>
                         <label class="form-check-label">
                             <?= htmlspecialchars($disc['nome_disciplina']) ?>
                         </label>

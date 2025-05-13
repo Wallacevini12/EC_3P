@@ -17,16 +17,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['resposta']) && isset($
 
     // Inserir a resposta na tabela 'respostas'
     $stmt = $oMysql->prepare("INSERT INTO respostas (codigo_pergunta, resposta, data_resposta) VALUES (?, ?, NOW())");
+    if ($stmt === false) {
+        $_SESSION['mensagem'] = "Erro ao preparar consulta para inserir resposta.";
+        header('Location: listar_perguntas.php');
+        exit;
+    }
     $stmt->bind_param("is", $codigo_pergunta, $resposta);
 
     if ($stmt->execute()) {
         // Atualizar o status da pergunta manualmente (caso não queira depender da trigger)
         $stmtStatus = $oMysql->prepare("UPDATE perguntas SET status = 'respondida' WHERE codigo_pergunta = ?");
+        if ($stmtStatus === false) {
+            $_SESSION['mensagem'] = "Erro ao preparar consulta para atualizar o status da pergunta.";
+            header('Location: listar_perguntas.php');
+            exit;
+        }
         $stmtStatus->bind_param("i", $codigo_pergunta);
         $stmtStatus->execute();
+
+        // Verificar se o update afetou alguma linha
+        if ($stmtStatus->affected_rows > 0) {
+            $_SESSION['mensagem'] = "Sua resposta foi enviada com sucesso!";
+        } else {
+            $_SESSION['mensagem'] = "Erro: O status da pergunta não foi atualizado.";
+        }
         $stmtStatus->close();
 
-        $_SESSION['mensagem'] = "Sua resposta foi enviada com sucesso!";
         header('Location: listar_perguntas.php');
         exit;
     } else {
@@ -36,10 +52,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['resposta']) && isset($
     }
 
     $stmt->close();
-    $oMysql->close();
 } else {
     $_SESSION['mensagem'] = "Dados inválidos!";
     header('Location: listar_perguntas.php');
     exit;
 }
+
+$oMysql->close();
 ?>

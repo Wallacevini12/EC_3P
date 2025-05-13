@@ -23,6 +23,7 @@ include "header.php";
           background-color: #f4f4f4;
         }
         h1 {
+          margin-top: 5%;
           color: #333;
         }
         .card-container {

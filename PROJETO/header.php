@@ -74,8 +74,14 @@ if (session_status() === PHP_SESSION_NONE) {
           <!-- Mostrar "Fazer Pergunta" apenas para aluno -->
           <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
             <li class="nav-item">
-              <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
-            </li>
+                <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="minhas_perguntas.php"><i class="bi bi-chat-left-text-fill"></i> Minhas Perguntas</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="perguntas_recentes.php"><i class="bi bi-clock-history"></i> Perguntas Recentes</a>
+              </li>
           <?php endif; ?>
 
           <!-- Mostrar "Lista de Monitores" apenas para professor -->

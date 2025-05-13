@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
 
---DROP SCHEMA learnhub_ep;
+
 -- Tabela de usuários (base para especializações)
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,6 +52,7 @@ CREATE TABLE perguntas (
     codigo_pergunta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     enunciado TEXT NOT NULL,
     data_criacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('aguardando resposta', 'respondida') NOT NULL DEFAULT 'aguardando resposta',
     usuario_codigo INT NOT NULL,
     disciplina_codigo INT UNSIGNED NOT NULL,
     FOREIGN KEY (usuario_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -84,8 +85,6 @@ CREATE TABLE monitores_possuem_disciplinas (
     FOREIGN KEY (monitor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE,
     FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
-
-
 
 -- Alunos em cursos
 CREATE TABLE alunos_possuem_cursos (
@@ -153,15 +152,33 @@ CREATE TABLE pergunta_possui_disciplina (
 -- Dados iniciais para períodos e disciplinas
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
 
-INSERT INTO disciplinas (codigo_disciplina, nome_disciplina, modalidade_disciplina) VALUES
-    (1, 'Programação Orientada a Objetos', 'EAD'),
-    (2, 'Estruturas de Dados', 'EAD'),
-    (3, 'Redes de Computadores', 'EAD'),
-    (4, 'Modelagem de Software', 'EAD'),
-    (5, 'Gestão de Equipes Ágeis', 'EAD');
-    INSERT INTO curso (nome_curso, duracao_curso) VALUES
+INSERT INTO curso (nome_curso, duracao_curso) VALUES
 ('Engenharia de Software', 8),
 ('Sistemas de Informação', 8),
 ('Análise e Desenvolvimento de Sistemas', 6),
 ('Ciência da Computação', 8),
 ('Redes de Computadores', 6);
+
+INSERT INTO disciplinas (nome_disciplina, modalidade_disciplina) VALUES
+('Algoritmos e Lógica de Programação', 'Presencial'),
+('Estrutura de Dados', 'Presencial'),
+('Banco de Dados', 'Presencial'),
+('Engenharia de Software', 'Online'),
+('Redes de Computadores', 'Online'),
+('Programação Orientada a Objetos', 'Presencial'),
+('Sistemas Operacionais', 'Presencial');
+
+
+
+DELIMITER $$
+
+CREATE TRIGGER atualizar_status_pergunta
+AFTER INSERT ON respostas
+FOR EACH ROW
+BEGIN
+    UPDATE perguntas
+    SET status = 'respondida'
+    WHERE codigo_pergunta = NEW.codigo_pergunta;
+END $$
+
+DELIMITER ;

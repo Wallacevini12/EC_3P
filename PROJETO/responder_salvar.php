@@ -12,21 +12,24 @@ if ($oMysql->connect_error) {
 
 // Verificar se os dados foram enviados via POST
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['resposta']) && isset($_POST['codigo_pergunta'])) {
-    $resposta = $_POST['resposta']; // Resposta digitada
-    $codigo_pergunta = $_POST['codigo_pergunta']; // Código da pergunta associada
+    $resposta = $_POST['resposta'];
+    $codigo_pergunta = $_POST['codigo_pergunta'];
 
-    // Preparar a inserção na tabela 'respostas'
+    // Inserir a resposta na tabela 'respostas'
     $stmt = $oMysql->prepare("INSERT INTO respostas (codigo_pergunta, resposta, data_resposta) VALUES (?, ?, NOW())");
     $stmt->bind_param("is", $codigo_pergunta, $resposta);
 
-    // Executar a inserção
     if ($stmt->execute()) {
-        // Redirecionar com mensagem de sucesso
+        // Atualizar o status da pergunta manualmente (caso não queira depender da trigger)
+        $stmtStatus = $oMysql->prepare("UPDATE perguntas SET status = 'respondida' WHERE codigo_pergunta = ?");
+        $stmtStatus->bind_param("i", $codigo_pergunta);
+        $stmtStatus->execute();
+        $stmtStatus->close();
+
         $_SESSION['mensagem'] = "Sua resposta foi enviada com sucesso!";
-        header('Location: listar_perguntas.php'); // Redireciona para listar perguntas
+        header('Location: listar_perguntas.php');
         exit;
     } else {
-        // Exibir mensagem de erro
         $_SESSION['mensagem'] = "Erro ao registrar resposta: " . $stmt->error;
         header('Location: listar_perguntas.php');
         exit;

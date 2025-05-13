@@ -15,6 +15,31 @@ if (session_status() === PHP_SESSION_NONE) {
 
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    .navbar .nav-link,
+    .navbar .navbar-brand,
+    .navbar .navbar-text {
+      color: greenyellow !important;
+  }
+
+    .navbar .nav-link:hover,
+    .navbar .navbar-brand:hover {
+      color: #adff2f !important; /* Tom levemente diferente ao passar o mouse */
+  }
+    .navbar-separator {
+    border-left: 2px solid greenyellow;
+    height: 40px;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+  
+  body {
+  padding-top: 100px
+  }
+  
+
+</style>
+  
 </head>
 <body>
 
@@ -37,7 +62,12 @@ if (session_status() === PHP_SESSION_NONE) {
           echo 'index.php';
         }
       ?>
-    "><i class="bi bi-lightning-fill"></i> LearnHub</a>
+    "><a class="navbar-brand d-flex align-items-center" href="...">
+      <img src="images/logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top me-2">
+      LearnHub
+    </a>
+
+    <div class="navbar-separator"></div>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -67,9 +97,6 @@ if (session_status() === PHP_SESSION_NONE) {
         </li>
 
         <?php if (isset($_SESSION['id'])): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
-          </li>
 
           <!-- Mostrar "Fazer Pergunta" apenas para aluno -->
           <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
@@ -105,9 +132,25 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php endif; ?>
       </ul>
 
+      <!-- DADOS DO USUÁRIO LOGADO -->
+      <?php if (isset($_SESSION['id']) && isset($_SESSION['nome']) && isset($_SESSION['tipo_usuario'])): ?>
+        <li class="nav-item">
+          <span class="navbar-text text-white me-3">
+            <i class="bi bi-person-fill"></i> <?php echo htmlspecialchars($_SESSION['nome']); ?> (<?php echo ucfirst($_SESSION['tipo_usuario']); ?>)
+          </span>
+        </li>
+      <?php endif; ?>
+
       <!-- Botão de logout na direita -->
       <?php if (isset($_SESSION['id'])): ?>
         <ul class="navbar-nav ms-auto">
+
+        
+
+          <li class="nav-item">
+            <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
+          </li>
+
           <li class="nav-item">
             <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Sair</a>
           </li>

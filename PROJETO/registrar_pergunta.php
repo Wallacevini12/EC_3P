@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
 </head>
 <body>
 
-<div class="d-flex justify-content-center align-items-center vh-100" style="margin-top: 80px">
+<div class="d-flex justify-content-center align-items-center vh-100">
     <div class="container" style="max-width: 600px;">
         <div class="card shadow p-5 d-flex flex-column gap-4 w-100 mb-3">
             <h2 class="text-center mb-4">Registrar Pergunta</h2>

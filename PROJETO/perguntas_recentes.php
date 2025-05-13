@@ -8,7 +8,14 @@ if ($oMysql->connect_error) {
 }
 
 $query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina, r.resposta
+    SELECT 
+        p.codigo_pergunta, 
+        p.enunciado, 
+        p.data_criacao, 
+        p.status,
+        u.nome AS nome_aluno, 
+        d.nome_disciplina, 
+        r.resposta
     FROM perguntas p
     JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
@@ -26,7 +33,11 @@ $result = $oMysql->query($query);
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <style>
+        body{
+            margin-top: 5%;
+        }
         .card {
             margin-bottom: 1rem;
         }
@@ -42,27 +53,37 @@ $result = $oMysql->query($query);
             font-size: 0.85rem;
             margin: 2px;
         }
+        .tag.status-respondida {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .tag.status-aguardando {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
 
 <div class="container mt-4">
-    <h3 class="mb-4">📋 Perguntas Recentes</h3>
+    <h3 class="mb-4">Perguntas Recentes</h3>
 
     <?php if ($result->num_rows > 0): ?>
-        <?php while ($row = $result->fetch_assoc()): ?>
+        <?php while ($row = $result->fetch_assoc()): 
+            $statusClass = $row['status'] === 'respondida' ? 'status-respondida' : 'status-aguardando';
+        ?>
             <div class="card shadow-sm">
                 <div class="card-header bg-white">
                     <div class="d-flex flex-wrap gap-2">
                         <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
                         <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
                         <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?></span>
-                        <span class="tag"><strong>Status:</strong> <?= $row['resposta'] ? 'Respondida' : 'Aguardando resposta' ?></span>
+                        <span class="tag <?= $statusClass ?>"><strong>Status:</strong> <?= ucfirst($row['status']) ?></span>
                     </div>
                 </div>
                 <div class="card-body">
                     <p><strong>Enunciado:</strong><br><?= nl2br(htmlspecialchars($row['enunciado'])) ?></p>
-                    <?php if ($row['resposta']): ?>
+                    <?php if (!empty($row['resposta'])): ?>
                         <hr>
                         <p><strong>Resposta:</strong><br><?= nl2br(htmlspecialchars($row['resposta'])) ?></p>
                     <?php endif; ?>

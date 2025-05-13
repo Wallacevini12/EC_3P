@@ -38,15 +38,27 @@ if ($tipo_usuario !== 'aluno') {
     exit;
 }
 
-// Buscar as disciplinas cadastradas para preencher o select
-$sql = "SELECT nome_disciplina FROM disciplinas ORDER BY nome_disciplina ASC";
-$result = $oMysql->query($sql);
+// Buscar as disciplinas cadastradas para preencher o select, mas apenas as vinculadas ao aluno
+$sql = "
+    SELECT d.nome_disciplina 
+    FROM disciplinas d
+    INNER JOIN alunos_possuem_disciplinas apd ON d.codigo_disciplina = apd.disciplina_codigo
+    WHERE apd.aluno_codigo = ? 
+    ORDER BY d.nome_disciplina ASC
+";
+$stmt = $oMysql->prepare($sql);
+$stmt->bind_param("i", $usuario_id);  // Substitua $usuario_id pelo ID do aluno
+$stmt->execute();
+$result = $stmt->get_result();
+
 if (!$result) {
     echo "Erro ao buscar disciplinas: " . $oMysql->error;
     exit;
 }
+
 $disciplinas = $result->fetch_all(MYSQLI_ASSOC);
 $result->free();
+$stmt->close();
 
 // Processar o formulário de registro de pergunta
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($_POST['materia'])) {

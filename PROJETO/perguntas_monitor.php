@@ -1,27 +1,53 @@
 <?php
 session_start();
+
 if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
     header("Location: login.php");
     exit;
 }
-include "header.php";
-// Incluir o arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; 
 
-// Conectar ao banco de dados
+include "header.php";
+include_once 'conecta_db.php';
+
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Consultar todas as perguntas no banco
-$query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
-    FROM perguntas p
-    JOIN usuarios u ON p.usuario_codigo = u.id
-    JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-    ORDER BY p.data_criacao DESC
-";
+$id_monitor = $_SESSION['id'];
+
+// Buscar todas as disciplinas que o monitor possui
+$sql_disciplina = "SELECT disciplina_codigo FROM monitores_possuem_disciplinas WHERE monitor_codigo = $id_monitor";
+$result_disciplina = $oMysql->query($sql_disciplina);
+
+$disciplinas = [];
+if ($result_disciplina) {
+    while ($row = $result_disciplina->fetch_assoc()) {
+        $disciplinas[] = $row['disciplina_codigo'];
+    }
+}
+
+if (count($disciplinas) > 0) {
+    $lista_disciplinas = implode(',', $disciplinas);
+
+    $query = "
+        SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
+        FROM perguntas p
+        JOIN usuarios u ON p.usuario_codigo = u.id
+        JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+        WHERE p.disciplina_codigo IN ($lista_disciplinas)
+        ORDER BY p.data_criacao DESC
+    ";
+} else {
+    // Sem disciplinas associadas ao monitor - não exibe perguntas
+    $query = "
+        SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
+        FROM perguntas p
+        JOIN usuarios u ON p.usuario_codigo = u.id
+        JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+        WHERE 1=0
+    ";
+}
 
 $result = $oMysql->query($query);
 
@@ -40,7 +66,6 @@ if (!$result) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
-
 
 <div class="container mt-3">
     <h2>Lista de Perguntas</h2>
@@ -66,7 +91,6 @@ if (!$result) {
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
                         <td>
-                            <!-- Botão para responder -->
                             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#responderModal<?= $row['codigo_pergunta'] ?>">Responder</button>
                         </td>
                     </tr>
@@ -109,7 +133,5 @@ if (!$result) {
 </html>
 
 <?php
-// Fechar a conexão com o banco de dados
 $oMysql->close();
 ?>
-

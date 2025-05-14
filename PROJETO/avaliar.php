@@ -1,37 +1,57 @@
 <?php
-include_once 'conecta_db.php';
 session_start();
+include_once 'conecta_db.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nota = (int)$_POST['nota'];
-    $resposta_id = (int)$_POST['resposta_id'];
-    $aluno_id = (int)$_POST['aluno_id'];
+$oMysql = conecta_db();
 
-    if ($nota >= 0 && $nota <= 5) {
-        $oMysql = conecta_db();
+$resposta_id = $_POST['resposta_id'];
+$aluno_id = $_POST['aluno_id'];
+$nota = $_POST['nota'];
 
-        // Verifica se a avaliação já existe
-        $stmt = $oMysql->prepare("SELECT id FROM avaliacoes WHERE aluno_id = ? AND resposta_id = ?");
-        $stmt->bind_param("ii", $aluno_id, $resposta_id);
-        $stmt->execute();
-        $stmt->store_result();
+// Verificação: esta resposta é de uma pergunta feita por este aluno?
+$query = "
+    SELECT p.usuario_codigo
+    FROM respostas r
+    JOIN perguntas p ON r.codigo_pergunta = p.codigo_pergunta
+    WHERE r.codigo_resposta = ?
+";
 
-        if ($stmt->num_rows == 0) {
-            // Insere nova avaliação
-            $stmt = $oMysql->prepare("INSERT INTO avaliacoes (aluno_id, resposta_id, nota) VALUES (?, ?, ?)");
-            $stmt->bind_param("iii", $aluno_id, $resposta_id, $nota);
-            $stmt->execute();
-        } else {
-            // Atualiza avaliação existente
-            $stmt = $oMysql->prepare("UPDATE avaliacoes SET nota = ?, data_avaliacao = NOW() WHERE aluno_id = ? AND resposta_id = ?");
-            $stmt->bind_param("iii", $nota, $aluno_id, $resposta_id);
-            $stmt->execute();
-        }
+$stmt = $oMysql->prepare($query);
+$stmt->bind_param("i", $resposta_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-        $stmt->close();
-        $oMysql->close();
-    }
+if ($result->num_rows === 0) {
+    die("Resposta não encontrada.");
 }
 
-header("Location: index.php"); // ou para a página de perguntas
-exit;
+$row = $result->fetch_assoc();
+
+if ($row['usuario_codigo'] != $aluno_id) {
+    die("Você não tem permissão para avaliar esta resposta.");
+}
+
+// Se passou na verificação, insere a avaliação
+$query = "INSERT INTO avaliacoes (resposta_id, aluno_id, nota) VALUES (?, ?, ?)";
+$stmt = $oMysql->prepare($query);
+$stmt->bind_param("iii", $resposta_id, $aluno_id, $nota);
+
+if ($stmt->execute()) {
+    echo "
+        <script>
+            alert('Avaliação registrada com sucesso!');
+            window.location.href = 'home_aluno.php';
+        </script>
+    ";
+} else {
+    echo "
+        <script>
+            alert('Erro ao registrar avaliação: " . addslashes($stmt->error) . "');
+            window.history.back();
+        </script>
+    ";
+}
+
+$stmt->close();
+$oMysql->close();
+?>

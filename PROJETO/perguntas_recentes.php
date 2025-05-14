@@ -94,8 +94,8 @@ $result = $oMysql->query($query);
                                     <option value="<?= $i ?>"><?= $i ?> estrela<?= $i != 1 ? 's' : '' ?></option>
                                 <?php endfor; ?>
                             </select>
-                            <input type="hidden" name="resposta_id" value="<?= $row['codigo_resposta'] ?>">
-                            <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>"> 
+                                <input type="hidden" name="resposta_id" value="<?= $row['codigo_resposta'] ?>">
+                                <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>">
                             <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
                         </form>
                     <?php endif; ?>

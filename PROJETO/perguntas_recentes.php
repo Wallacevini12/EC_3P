@@ -9,18 +9,19 @@ if ($oMysql->connect_error) {
 
 $query = "
     SELECT 
-        p.codigo_pergunta, 
-        p.enunciado, 
-        p.data_criacao, 
-        p.status,
-        u.nome AS nome_aluno, 
-        d.nome_disciplina, 
-        r.resposta
-    FROM perguntas p
-    JOIN usuarios u ON p.usuario_codigo = u.id
-    JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-    LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-    ORDER BY p.data_criacao DESC
+    p.codigo_pergunta, 
+    p.enunciado, 
+    p.data_criacao, 
+    p.status,
+    u.nome AS nome_aluno, 
+    d.nome_disciplina, 
+    r.resposta,
+    r.codigo_resposta  -- Adicione isto
+FROM perguntas p
+JOIN usuarios u ON p.usuario_codigo = u.id
+JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
+ORDER BY p.data_criacao DESC
 ";
 
 $result = $oMysql->query($query);
@@ -83,8 +84,25 @@ $result = $oMysql->query($query);
                     <?php if (!empty($row['resposta'])): ?>
                         <hr>
                         <p><strong>Resposta:</strong><br><?= nl2br(htmlspecialchars($row['resposta'])) ?></p>
+                        <hr>
+                        <!-- Formulário de Avaliação -->
+                        <form method="post" action="avaliar.php" class="mt-3">
+                            <label for="nota_<?= $row['codigo_pergunta'] ?>" class="form-label">Avalie esta resposta:</label>
+                            <select name="nota" id="nota_<?= $row['codigo_pergunta'] ?>" class="form-select" required>
+                                <option value="">Selecione</option>
+                                <?php for ($i = 0; $i <= 5; $i++): ?>
+                                    <option value="<?= $i ?>"><?= $i ?> estrela<?= $i != 1 ? 's' : '' ?></option>
+                                <?php endfor; ?>
+                            </select>
+                            <input type="hidden" name="resposta_id" value="<?= $row['codigo_resposta'] ?>">
+                            <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>"> 
+                            <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
+                        </form>
                     <?php endif; ?>
                 </div>
+                
+
+                
             </div>
         <?php endwhile; ?>
     <?php else: ?>

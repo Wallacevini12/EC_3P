@@ -149,6 +149,24 @@ CREATE TABLE pergunta_possui_disciplina (
     FOREIGN KEY (disciplina_codigo) REFERENCES disciplinas(codigo_disciplina) ON DELETE CASCADE
 );
 
+CREATE TABLE avaliacoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id INT NOT NULL,
+    resposta_id INT UNSIGNED NOT NULL,
+    nota INT CHECK (nota BETWEEN 0 AND 5),
+    data_avaliacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (aluno_id, resposta_id),
+    FOREIGN KEY (aluno_id) REFERENCES usuarios(id) ON DELETE CASCADE,
+    FOREIGN KEY (resposta_id) REFERENCES respostas(codigo_resposta) ON DELETE CASCADE
+);
+
+
+
+
+
+
+
+
 -- Dados iniciais para períodos e disciplinas
 INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
 
@@ -167,6 +185,10 @@ INSERT INTO disciplinas (nome_disciplina, modalidade_disciplina) VALUES
 ('Redes de Computadores', 'Online'),
 ('Programação Orientada a Objetos', 'Presencial'),
 ('Sistemas Operacionais', 'Presencial');
+
+
+
+
 
 
 

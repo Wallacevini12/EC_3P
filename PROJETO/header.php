@@ -37,7 +37,6 @@ if (session_status() === PHP_SESSION_NONE) {
   padding-top: 100px
   }
   
-
 </style>
   
 </head>

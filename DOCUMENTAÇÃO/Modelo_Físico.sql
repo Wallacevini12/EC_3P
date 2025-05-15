@@ -160,7 +160,8 @@ CREATE TABLE avaliacoes (
     FOREIGN KEY (resposta_id) REFERENCES respostas(codigo_resposta) ON DELETE CASCADE
 );
 
-
+ALTER TABLE perguntas ADD COLUMN encaminhada BOOLEAN DEFAULT FALSE;
+ALTER TABLE perguntas ADD COLUMN respondida TINYINT(1) DEFAULT 0;
 
 
 

@@ -115,6 +115,9 @@ if (session_status() === PHP_SESSION_NONE) {
             <li class="nav-item">
               <a class="nav-link" href="lista_monitor.php"><i class="bi bi-people-fill"></i> Lista de Monitores</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="perguntas_encaminhadas.php"><i class="bi bi-send-fill"></i> Perguntas Encaminhadas</a>
+            </li>
           <?php endif; ?>
 
           <!-- Mostrar "Perguntas" apenas para monitor -->

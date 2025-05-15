@@ -1,62 +1,63 @@
 <?php
 session_start();
 
-// Incluir o arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; 
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] !== 'monitor') {
+    header("Location: login.php");
+    exit;
+}
 
-// Conectar ao banco de dados
+include_once 'conecta_db.php';
+
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Verificar se os dados foram enviados via POST
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['resposta']) && isset($_POST['codigo_pergunta'])) {
-    $resposta = $_POST['resposta'];
-    $codigo_pergunta = $_POST['codigo_pergunta'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $codigo_pergunta = intval($_POST['codigo_pergunta']);
+    $resposta = trim($_POST['resposta']);
+    $id_monitor = $_SESSION['id'];
 
-    // Inserir a resposta na tabela 'respostas'
-    $stmt = $oMysql->prepare("INSERT INTO respostas (codigo_pergunta, resposta, data_resposta) VALUES (?, ?, NOW())");
-    if ($stmt === false) {
-        $_SESSION['mensagem'] = "Erro ao preparar consulta para inserir resposta.";
-        header('Location: listar_perguntas.php');
-        exit;
-    }
-    $stmt->bind_param("is", $codigo_pergunta, $resposta);
-
-    if ($stmt->execute()) {
-        // Atualizar o status da pergunta manualmente (caso não queira depender da trigger)
-        $stmtStatus = $oMysql->prepare("UPDATE perguntas SET status = 'respondida' WHERE codigo_pergunta = ?");
-        if ($stmtStatus === false) {
-            $_SESSION['mensagem'] = "Erro ao preparar consulta para atualizar o status da pergunta.";
-            header('Location: listar_perguntas.php');
-            exit;
-        }
-        $stmtStatus->bind_param("i", $codigo_pergunta);
-        $stmtStatus->execute();
-
-        // Verificar se o update afetou alguma linha
-        if ($stmtStatus->affected_rows > 0) {
-            $_SESSION['mensagem'] = "Sua resposta foi enviada com sucesso!";
-        } else {
-            $_SESSION['mensagem'] = "Erro: O status da pergunta não foi atualizado.";
-        }
-        $stmtStatus->close();
-
-        header('Location: listar_perguntas.php');
-        exit;
-    } else {
-        $_SESSION['mensagem'] = "Erro ao registrar resposta: " . $stmt->error;
-        header('Location: listar_perguntas.php');
-        exit;
+    if (empty($resposta)) {
+        die("A resposta não pode ser vazia.");
     }
 
-    $stmt->close();
-} else {
-    $_SESSION['mensagem'] = "Dados inválidos!";
-    header('Location: listar_perguntas.php');
+    // Inserir resposta na tabela respostas
+    $sql_insert = "INSERT INTO respostas (codigo_pergunta, resposta, data_resposta) VALUES (?, ?, NOW())";
+    $stmt_insert = $oMysql->prepare($sql_insert);
+
+    if (!$stmt_insert) {
+        die("Erro no prepare: " . $oMysql->error);
+    }
+
+    $stmt_insert->bind_param("is", $codigo_pergunta, $resposta);
+
+    if (!$stmt_insert->execute()) {
+        die("Erro ao salvar resposta: " . $stmt_insert->error);
+    }
+
+    $stmt_insert->close();
+
+    // Atualizar status da pergunta para 'respondida' e respondida = 1
+    $sql_update = "UPDATE perguntas SET status = 'respondida', respondida = 1 WHERE codigo_pergunta = ?";
+    $stmt_update = $oMysql->prepare($sql_update);
+
+    if (!$stmt_update) {
+        die("Erro no prepare: " . $oMysql->error);
+    }
+
+    $stmt_update->bind_param("i", $codigo_pergunta);
+
+    if (!$stmt_update->execute()) {
+        die("Erro ao atualizar status da pergunta: " . $stmt_update->error);
+    }
+
+    $stmt_update->close();
+
+    // Redirecionar para a página do monitor para listar perguntas pendentes
+    header("Location: perguntas_monitor.php");
     exit;
+} else {
+    die("Método inválido.");
 }
-
-$oMysql->close();
 ?>

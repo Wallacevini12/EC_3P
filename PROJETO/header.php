@@ -45,26 +45,25 @@ if (session_status() === PHP_SESSION_NONE) {
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
     <!-- Marca -->
-    <a class="navbar-brand" href="
-      <?php 
-        if (isset($_SESSION['tipo_usuario'])) {
-          if ($_SESSION['tipo_usuario'] === 'aluno') {
-            echo 'home_aluno.php';
-          } elseif ($_SESSION['tipo_usuario'] === 'professor') {
-            echo 'home_professor.php';
-          } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
-            echo 'home_monitor.php';
-          } else {
-            echo 'index.php';
-          }
+    <a class="navbar-brand d-flex align-items-center" href="
+    <?php 
+      if (isset($_SESSION['tipo_usuario'])) {
+        if ($_SESSION['tipo_usuario'] === 'aluno') {
+          echo 'home_aluno.php';
+        } elseif ($_SESSION['tipo_usuario'] === 'professor') {
+          echo 'home_professor.php';
+        } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
+          echo 'home_monitor.php';
         } else {
           echo 'index.php';
         }
-      ?>
-    "><a class="navbar-brand d-flex align-items-center" href="...">
-      <img src="images/logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top me-2">
-      LearnHub
-    </a>
+      } else {
+        echo 'index.php';
+      }
+    ?>">
+  <img src="images/logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top me-2">
+  <span>LearnHub</span>
+</a>
 
     <div class="navbar-separator"></div>
 

@@ -1,22 +1,20 @@
 <?php
+// Incluir arquivo de conexão com o banco de dados
 include_once 'conecta_db.php'; 
 include "header.php";
 
+// Conecta ao banco
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
 $query = "
-    SELECT 
-    p.codigo_pergunta, 
-    p.enunciado, 
-    p.data_criacao, 
-    p.status,
+    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
     u.nome AS nome_aluno, 
     d.nome_disciplina, 
     r.resposta,
-    r.codigo_resposta  -- Adicione isto
+    r.codigo_resposta
 FROM perguntas p
 JOIN usuarios u ON p.usuario_codigo = u.id
 JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
@@ -35,31 +33,6 @@ $result = $oMysql->query($query);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        .card {
-            margin-bottom: 1rem;
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-        .tag {
-            background-color: #f1f1f1;
-            border-radius: 8px;
-            padding: 4px 10px;
-            font-size: 0.85rem;
-            margin: 2px;
-        }
-        .tag.status-respondida {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .tag.status-aguardando {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
 </head>
 <body>
 
@@ -70,7 +43,7 @@ $result = $oMysql->query($query);
         <?php while ($row = $result->fetch_assoc()): 
             $statusClass = $row['status'] === 'respondida' ? 'status-respondida' : 'status-aguardando';
         ?>
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <div class="d-flex flex-wrap gap-2">
                         <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
@@ -85,24 +58,8 @@ $result = $oMysql->query($query);
                         <hr>
                         <p><strong>Resposta:</strong><br><?= nl2br(htmlspecialchars($row['resposta'])) ?></p>
                         <hr>
-                        <!-- Formulário de Avaliação -->
-                        <form method="post" action="avaliar.php" class="mt-3">
-                            <label for="nota_<?= $row['codigo_pergunta'] ?>" class="form-label">Avalie esta resposta:</label>
-                            <select name="nota" id="nota_<?= $row['codigo_pergunta'] ?>" class="form-select" required>
-                                <option value="">Selecione</option>
-                                <?php for ($i = 0; $i <= 5; $i++): ?>
-                                    <option value="<?= $i ?>"><?= $i ?> estrela<?= $i != 1 ? 's' : '' ?></option>
-                                <?php endfor; ?>
-                            </select>
-                                <input type="hidden" name="resposta_id" value="<?= $row['codigo_resposta'] ?>">
-                                <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>">
-                            <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
-                        </form>
                     <?php endif; ?>
                 </div>
-                
-
-                
             </div>
         <?php endwhile; ?>
     <?php else: ?>

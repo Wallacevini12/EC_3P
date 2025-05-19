@@ -24,7 +24,13 @@ $idAluno = $_SESSION['id'];
 
 // Consulta perguntas feitas pelo aluno logado
 $query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, d.nome_disciplina, r.resposta
+    SELECT 
+        p.codigo_pergunta, 
+        p.enunciado, 
+        p.data_criacao, 
+        d.nome_disciplina, 
+        r.resposta,
+        r.codigo_resposta
     FROM perguntas p
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
@@ -71,6 +77,7 @@ $result = $stmt->get_result();
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
                         <td>
+                            <!-- Botão para mostrar a resposta -->
                             <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
                         </td>
                     </tr>
@@ -88,6 +95,23 @@ $result = $stmt->get_result();
                                 <div class="modal-body">
                                     <p><strong>Resposta:</strong></p>
                                     <p><?= htmlspecialchars($row['resposta'] ?? 'Ainda não respondida.', ENT_QUOTES, 'UTF-8') ?></p>
+                                    
+                                    <!-- Formulário de Avaliação (exibido apenas se houver uma resposta) -->
+                                    <?php if (!empty($row['resposta'])): ?>
+                                        <hr>
+                                        <form method="POST" action="avaliar.php" class="mt-3">
+                                            <label for="nota_<?= $row['codigo_pergunta'] ?>" class="form-label">Avalie esta resposta:</label>
+                                            <select name="nota" id="nota_<?= $row['codigo_pergunta'] ?>" class="form-select" required>
+                                                <option value="">Selecione</option>
+                                                <?php for ($i = 0; $i <= 5; $i++): ?>
+                                                    <option value="<?= $i ?>"><?= $i ?> estrela<?= $i != 1 ? 's' : '' ?></option>
+                                                <?php endfor; ?>
+                                            </select>
+                                            <input type="hidden" name="resposta_id" value="<?= $row['codigo_resposta'] ?>">
+                                            <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>">
+                                            <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>

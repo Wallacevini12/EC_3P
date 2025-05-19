@@ -31,6 +31,23 @@ if ($row['usuario_codigo'] != $aluno_id) {
     die("Você não tem permissão para avaliar esta resposta.");
 }
 
+// Verifica se o aluno já avaliou essa resposta
+$verifica = $oMysql->prepare("SELECT id FROM avaliacoes WHERE aluno_id = ? AND resposta_id = ?");
+$verifica->bind_param("ii", $aluno_id, $resposta_id);
+$verifica->execute();
+$verifica->store_result();
+
+if ($verifica->num_rows > 0) {
+    echo "
+        <script>
+            alert('Você já avaliou essa resposta.');
+            window.location.href = 'home_aluno.php';
+        </script>
+    ";
+    exit();
+}
+$verifica->close();
+
 // Se passou na verificação, insere a avaliação
 $query = "INSERT INTO avaliacoes (resposta_id, aluno_id, nota) VALUES (?, ?, ?)";
 $stmt = $oMysql->prepare($query);

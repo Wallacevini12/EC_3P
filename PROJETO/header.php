@@ -107,6 +107,9 @@ if (session_status() === PHP_SESSION_NONE) {
               <li class="nav-item">
                 <a class="nav-link" href="perguntas_recentes.php"><i class="bi bi-clock-history"></i> Perguntas Recentes</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check-circle-fill"></i> Perguntas Respondidas</a>
+              </li>
           <?php endif; ?>
 
           <!-- Mostrar "Lista de Monitores" apenas para professor -->

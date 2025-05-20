@@ -103,6 +103,14 @@ include "header.php";
             </div>
         </a>
 
+        <!-- NOVO CARD ADICIONADO AQUI -->
+        <a href="perguntas_respondidas.php" class="card-link">
+            <div class="card">
+                <i class="fas fa-check-circle"></i>
+                <span>Perguntas Respondidas</span>
+            </div>
+        </a>
+
         <a href="minha_conta.php" class="card-link">
             <div class="card">
                 <i class="fas fa-user"></i>

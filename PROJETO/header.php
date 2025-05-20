@@ -19,12 +19,13 @@ if (session_status() === PHP_SESSION_NONE) {
     .navbar .nav-link,
     .navbar .navbar-brand,
     .navbar .navbar-text {
-      color: greenyellow !important;
+      color: greenyellow ;
+      font-size: 0.95rem;
   }
 
     .navbar .nav-link:hover,
     .navbar .navbar-brand:hover {
-      color: #adff2f !important; /* Tom levemente diferente ao passar o mouse */
+      color: #adff2f; /* Tom levemente diferente ao passar o mouse */
   }
     .navbar-separator {
     border-left: 2px solid greenyellow;
@@ -36,6 +37,8 @@ if (session_status() === PHP_SESSION_NONE) {
   body {
   padding-top: 100px
   }
+
+  
   
 </style>
   
@@ -101,13 +104,16 @@ if (session_status() === PHP_SESSION_NONE) {
           <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
             <li class="nav-item">
                 <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
-              </li>
-              <li class="nav-item">
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="minhas_perguntas.php"><i class="bi bi-chat-left-text-fill"></i> Minhas Perguntas</a>
-              </li>
-              <li class="nav-item">
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="perguntas_recentes.php"><i class="bi bi-clock-history"></i> Perguntas Recentes</a>
-              </li>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="respostas_avaliadas.php"><i class="bi bi-star-fill"></i> Respostas Avaliadas</a>
+            </li>
           <?php endif; ?>
 
           <!-- Mostrar "Lista de Monitores" apenas para professor -->
@@ -127,19 +133,15 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
+          <li class="nav-item">
+            <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check2-square"></i> Perguntas Respondidas</a>
+          </li>
+
         <?php else: ?>
           <li class="nav-item">
             <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
           </li>
         <?php endif; ?>
-
-      <!-- Mostrar "Perguntas Respondidas" para todos os usuários logados -->
-        <li class="nav-item">
-          <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check-circle-fill"></i> Perguntas Respondidas</a>
-        </li>
-
-
-
       </ul>
 
 

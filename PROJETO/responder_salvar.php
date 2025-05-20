@@ -23,14 +23,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Inserir resposta na tabela respostas
-    $sql_insert = "INSERT INTO respostas (codigo_pergunta, resposta, data_resposta) VALUES (?, ?, NOW())";
+    // Alteração aqui: adicionar o monitor_id na query e bind_param
+    $sql_insert = "INSERT INTO respostas (codigo_pergunta, monitor_id, resposta, data_resposta) VALUES (?, ?, ?, NOW())";
     $stmt_insert = $oMysql->prepare($sql_insert);
 
     if (!$stmt_insert) {
         die("Erro no prepare: " . $oMysql->error);
     }
 
-    $stmt_insert->bind_param("is", $codigo_pergunta, $resposta);
+    $stmt_insert->bind_param("iis", $codigo_pergunta, $id_monitor, $resposta);
 
     if (!$stmt_insert->execute()) {
         die("Erro ao salvar resposta: " . $stmt_insert->error);

@@ -22,7 +22,7 @@ if ($oMysql->connect_error) {
 
 $idAluno = $_SESSION['id'];
 
-// Consulta perguntas feitas pelo aluno logado
+// Consulta perguntas feitas pelo aluno logado, incluindo se já existe avaliação da resposta por esse aluno
 $query = "
     SELECT 
         p.codigo_pergunta, 
@@ -30,16 +30,18 @@ $query = "
         p.data_criacao, 
         d.nome_disciplina, 
         r.resposta,
-        r.codigo_resposta
+        r.codigo_resposta,
+        a.id AS codigo_avaliacao  -- alias corrigido
     FROM perguntas p
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
+    LEFT JOIN avaliacoes a ON r.codigo_resposta = a.resposta_id AND a.aluno_id = ? 
     WHERE p.usuario_codigo = ?
     ORDER BY p.data_criacao DESC
 ";
 
 $stmt = $oMysql->prepare($query);
-$stmt->bind_param("i", $idAluno);
+$stmt->bind_param("ii", $idAluno, $idAluno);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -95,9 +97,9 @@ $result = $stmt->get_result();
                                 <div class="modal-body">
                                     <p><strong>Resposta:</strong></p>
                                     <p><?= htmlspecialchars($row['resposta'] ?? 'Ainda não respondida.', ENT_QUOTES, 'UTF-8') ?></p>
-                                    
-                                    <!-- Formulário de Avaliação (exibido apenas se houver uma resposta) -->
-                                    <?php if (!empty($row['resposta'])): ?>
+
+                                    <?php if (!empty($row['resposta']) && empty($row['codigo_avaliacao'])): ?>
+                                        <!-- Mostrar formulário só se houver resposta E não houver avaliação -->
                                         <hr>
                                         <form method="POST" action="avaliar.php" class="mt-3">
                                             <label for="nota_<?= $row['codigo_pergunta'] ?>" class="form-label">Avalie esta resposta:</label>
@@ -111,6 +113,9 @@ $result = $stmt->get_result();
                                             <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>">
                                             <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
                                         </form>
+                                    <?php elseif (!empty($row['resposta']) && !empty($row['codigo_avaliacao'])): ?>
+                                        <!-- Mensagem que já foi avaliada -->
+                                        <p class="text-success mt-2">Você já avaliou esta resposta.</p>
                                     <?php endif; ?>
                                 </div>
                             </div>

@@ -2,7 +2,7 @@
 CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
-
+DROP SCHEMA learnhub_ep;
 
 -- Tabela de usuários (base para especializações)
 CREATE TABLE usuarios (
@@ -62,9 +62,11 @@ CREATE TABLE perguntas (
 CREATE TABLE respostas (
     codigo_resposta INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     codigo_pergunta INT UNSIGNED NOT NULL,
+    monitor_id INT NOT NULL,
     resposta TEXT NOT NULL,
     data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (codigo_pergunta) REFERENCES perguntas(codigo_pergunta) ON DELETE CASCADE
+    FOREIGN KEY (codigo_pergunta) REFERENCES perguntas(codigo_pergunta) ON DELETE CASCADE,
+    FOREIGN KEY (monitor_id) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
 -- Relacionamentos N:N

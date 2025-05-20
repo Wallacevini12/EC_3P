@@ -94,6 +94,7 @@ if (session_status() === PHP_SESSION_NONE) {
           "><i class="bi bi-house-door-fill"></i> Home</a>
         </li>
 
+
         <?php if (isset($_SESSION['id'])): ?>
 
           <!-- Mostrar "Fazer Pergunta" apenas para aluno -->
@@ -106,9 +107,6 @@ if (session_status() === PHP_SESSION_NONE) {
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="perguntas_recentes.php"><i class="bi bi-clock-history"></i> Perguntas Recentes</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check-circle-fill"></i> Perguntas Respondidas</a>
               </li>
           <?php endif; ?>
 
@@ -134,7 +132,17 @@ if (session_status() === PHP_SESSION_NONE) {
             <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
           </li>
         <?php endif; ?>
+
+      <!-- Mostrar "Perguntas Respondidas" para todos os usuários logados -->
+        <li class="nav-item">
+          <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check-circle-fill"></i> Perguntas Respondidas</a>
+        </li>
+
+
+
       </ul>
+
+
 
       <!-- DADOS DO USUÁRIO LOGADO -->
       <?php if (isset($_SESSION['id']) && isset($_SESSION['nome']) && isset($_SESSION['tipo_usuario'])): ?>

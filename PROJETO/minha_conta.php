@@ -39,7 +39,7 @@ if ($tipo_usuario === 'monitor') {
             AVG(ar.nota) AS media_avaliacao,
             COUNT(ar.nota) AS total_avaliacoes
         FROM usuarios u
-        JOIN respostas r ON u.id = r.monitor_id
+        JOIN respostas r ON u.id = r.respondente_id
         JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
         WHERE u.tipo_usuario = 'monitor'
         GROUP BY u.id, u.nome

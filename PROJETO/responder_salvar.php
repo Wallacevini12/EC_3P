@@ -23,8 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Inserir resposta na tabela respostas
-    // Alteração aqui: adicionar o monitor_id na query e bind_param
-    $sql_insert = "INSERT INTO respostas (codigo_pergunta, monitor_id, resposta, data_resposta) VALUES (?, ?, ?, NOW())";
+ 
+    $sql_insert = "INSERT INTO respostas (codigo_pergunta, respondente_id, resposta, data_resposta) VALUES (?, ?, ?, NOW())";
     $stmt_insert = $oMysql->prepare($sql_insert);
 
     if (!$stmt_insert) {

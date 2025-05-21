@@ -32,7 +32,7 @@ $query = "
     INNER JOIN usuarios u ON p.usuario_codigo = u.id
     INNER JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN avaliacoes a ON r.codigo_resposta = a.resposta_id
-    WHERE r.monitor_id = ?
+    WHERE r.respondente_id = ?
     ORDER BY p.data_criacao DESC
 ";
 

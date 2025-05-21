@@ -4,9 +4,13 @@ include_once 'conecta_db.php';
 
 $oMysql = conecta_db();
 
-$resposta_id = $_POST['resposta_id'];
-$aluno_id = $_POST['aluno_id'];
-$nota = $_POST['nota'];
+$resposta_id = filter_input(INPUT_POST, 'resposta_id', FILTER_VALIDATE_INT);
+$aluno_id = filter_input(INPUT_POST, 'aluno_id', FILTER_VALIDATE_INT);
+$nota = filter_input(INPUT_POST, 'nota', FILTER_VALIDATE_INT);
+
+if ($resposta_id === false || $aluno_id === false || $nota === false || $nota < 0 || $nota > 5) {
+    die("Dados inválidos.");
+}
 
 // Verificação: esta resposta é de uma pergunta feita por este aluno?
 $query = "
@@ -31,27 +35,12 @@ if ($row['usuario_codigo'] != $aluno_id) {
     die("Você não tem permissão para avaliar esta resposta.");
 }
 
-// Verifica se o aluno já avaliou essa resposta
-$verifica = $oMysql->prepare("SELECT id FROM avaliacoes WHERE aluno_id = ? AND resposta_id = ?");
-$verifica->bind_param("ii", $aluno_id, $resposta_id);
-$verifica->execute();
-$verifica->store_result();
+// Insere ou atualiza avaliação com ON DUPLICATE KEY UPDATE
+$query = "INSERT INTO avaliacoes (aluno_id, resposta_id, nota) VALUES (?, ?, ?)
+          ON DUPLICATE KEY UPDATE nota = VALUES(nota), data_avaliacao = CURRENT_TIMESTAMP";
 
-if ($verifica->num_rows > 0) {
-    echo "
-        <script>
-            alert('Você já avaliou essa resposta.');
-            window.location.href = 'home_aluno.php';
-        </script>
-    ";
-    exit();
-}
-$verifica->close();
-
-// Se passou na verificação, insere a avaliação
-$query = "INSERT INTO avaliacoes (resposta_id, aluno_id, nota) VALUES (?, ?, ?)";
 $stmt = $oMysql->prepare($query);
-$stmt->bind_param("iii", $resposta_id, $aluno_id, $nota);
+$stmt->bind_param("iii", $aluno_id, $resposta_id, $nota);
 
 if ($stmt->execute()) {
     echo "

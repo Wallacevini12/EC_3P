@@ -31,11 +31,11 @@ $query = "
         d.nome_disciplina, 
         r.resposta,
         r.codigo_resposta,
-        a.id AS codigo_avaliacao  -- alias corrigido
+        ar.nota AS nota_avaliacao  -- usa a tabela avaliacoes_respostas e coluna nota
     FROM perguntas p
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-    LEFT JOIN avaliacoes a ON r.codigo_resposta = a.resposta_id AND a.aluno_id = ? 
+    LEFT JOIN avaliacoes_respostas ar ON r.codigo_resposta = ar.codigo_resposta AND ar.aluno_id = ? 
     WHERE p.usuario_codigo = ?
     ORDER BY p.data_criacao DESC
 ";
@@ -75,12 +75,13 @@ $result = $stmt->get_result();
                 <?php while ($row = $result->fetch_assoc()): ?>
                     <tr>
                         <td><?= $row['codigo_pergunta'] ?></td>
-                        <td><?= htmlspecialchars(substr($row['enunciado'], 0, 100)) . (strlen($row['enunciado']) > 100 ? '...' : '') ?></td>
+                        <td><?= htmlspecialchars(mb_strimwidth($row['enunciado'], 0, 100, '...')) ?></td>
                         <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
                         <td><?= $row['data_criacao'] ?></td>
                         <td>
-                            <!-- Botão para mostrar a resposta -->
-                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">Mostrar Resposta</button>
+                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#respostaModal<?= $row['codigo_pergunta'] ?>">
+                                Mostrar Resposta
+                            </button>
                         </td>
                     </tr>
 
@@ -92,13 +93,13 @@ $result = $stmt->get_result();
                                     <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">
                                         <?= htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8') ?>
                                     </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                                 </div>
                                 <div class="modal-body">
                                     <p><strong>Resposta:</strong></p>
                                     <p><?= htmlspecialchars($row['resposta'] ?? 'Ainda não respondida.', ENT_QUOTES, 'UTF-8') ?></p>
 
-                                    <?php if (!empty($row['resposta']) && empty($row['codigo_avaliacao'])): ?>
+                                    <?php if (!empty($row['resposta']) && $row['nota_avaliacao'] === null): ?>
                                         <!-- Mostrar formulário só se houver resposta E não houver avaliação -->
                                         <hr>
                                         <form method="POST" action="avaliar.php" class="mt-3">
@@ -113,7 +114,7 @@ $result = $stmt->get_result();
                                             <input type="hidden" name="aluno_id" value="<?= $_SESSION['id'] ?>">
                                             <button type="submit" class="btn btn-primary mt-2">Enviar Avaliação</button>
                                         </form>
-                                    <?php elseif (!empty($row['resposta']) && !empty($row['codigo_avaliacao'])): ?>
+                                    <?php elseif (!empty($row['resposta']) && $row['nota_avaliacao'] !== null): ?>
                                         <!-- Mensagem que já foi avaliada -->
                                         <p class="text-success mt-2">Você já avaliou esta resposta.</p>
                                     <?php endif; ?>

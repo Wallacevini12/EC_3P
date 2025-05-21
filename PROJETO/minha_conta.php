@@ -29,6 +29,29 @@ if ($conn->connect_error) {
     die("Erro na conexão: " . $conn->connect_error);
 }
 
+// Se for monitor, calcula o ranking
+
+if ($tipo_usuario === 'monitor') {
+    $sql_ranking = "
+        SELECT 
+            u.id,
+            u.nome,
+            AVG(ar.nota) AS media_avaliacao,
+            COUNT(ar.nota) AS total_avaliacoes
+        FROM usuarios u
+        JOIN respostas r ON u.id = r.monitor_id
+        JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
+        WHERE u.tipo_usuario = 'monitor'
+        GROUP BY u.id, u.nome
+        ORDER BY media_avaliacao DESC
+        LIMIT 10
+    ";
+
+    $result_ranking = $conn->query($sql_ranking);
+}
+
+
+
 // Identifica tabela e coluna conforme tipo de usuário
 $tabela_vinculo = '';
 $coluna_usuario = '';
@@ -175,6 +198,39 @@ while ($row = $res->fetch_assoc()) {
         <p><strong>Email:</strong> <?= htmlspecialchars($dados_usuario['email']) ?></p>
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
+        <?php if ($tipo_usuario === 'monitor'): ?>
+        <h3>Ranking dos Monitores</h3>
+        <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Posição</th>
+                        <th>Nome do Monitor</th>
+                        <th>Média da Avaliação</th>
+                        <th>Total de Avaliações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $posicao = 1;
+                    while ($row = $result_ranking->fetch_assoc()):
+                    ?>
+                    <tr>
+                        <td><?= $posicao ?></td>
+                        <td><?= htmlspecialchars($row['nome']) ?></td>
+                        <td><?= number_format($row['media_avaliacao'], 2) ?></td>
+                        <td><?= $row['total_avaliacoes'] ?></td>
+                    </tr>
+                    <?php 
+                    $posicao++;
+                    endwhile; 
+                    ?>
+                </tbody>
+            </table>
+        <?php else: ?>
+            <p>Nenhum monitor avaliado ainda.</p>
+        <?php endif; ?>
+    <?php endif; ?>
 
         <p><strong>Disciplinas Vinculadas:</strong></p>
         <?php if (!empty($disciplinas)): ?>

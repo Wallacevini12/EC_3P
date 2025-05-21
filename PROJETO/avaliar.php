@@ -12,9 +12,9 @@ if ($resposta_id === false || $aluno_id === false || $nota === false || $nota < 
     die("Dados inválidos.");
 }
 
-// Verificação: esta resposta é de uma pergunta feita por este aluno?
+// Verifica se a resposta existe, pertence à pergunta do aluno e pega o respondente_tipo
 $query = "
-    SELECT p.usuario_codigo
+    SELECT p.usuario_codigo, r.respondente_tipo
     FROM respostas r
     JOIN perguntas p ON r.codigo_pergunta = p.codigo_pergunta
     WHERE r.codigo_resposta = ?
@@ -35,7 +35,18 @@ if ($row['usuario_codigo'] != $aluno_id) {
     die("Você não tem permissão para avaliar esta resposta.");
 }
 
-// Insere ou atualiza avaliação com ON DUPLICATE KEY UPDATE
+// Bloqueia avaliação se respondente for professor
+if ($row['respondente_tipo'] === 'professor') {
+    echo "
+        <script>
+            alert('Esta resposta foi dada por um professor e não pode ser avaliada.');
+            window.location.href = 'home_aluno.php';
+        </script>
+    ";
+    exit;
+}
+
+// Se chegou aqui, respondente é monitor, permite avaliação
 $query = "INSERT INTO avaliacoes (aluno_id, resposta_id, nota) VALUES (?, ?, ?)
           ON DUPLICATE KEY UPDATE nota = VALUES(nota), data_avaliacao = CURRENT_TIMESTAMP";
 
@@ -50,9 +61,10 @@ if ($stmt->execute()) {
         </script>
     ";
 } else {
+    $erro = addslashes($stmt->error);
     echo "
         <script>
-            alert('Erro ao registrar avaliação: " . addslashes($stmt->error) . "');
+            alert('Erro ao registrar avaliação: {$erro}');
             window.history.back();
         </script>
     ";

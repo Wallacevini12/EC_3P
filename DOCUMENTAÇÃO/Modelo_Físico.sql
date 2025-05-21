@@ -164,6 +164,11 @@ CREATE TABLE avaliacoes (
 
 ALTER TABLE perguntas ADD COLUMN encaminhada BOOLEAN DEFAULT FALSE;
 ALTER TABLE perguntas ADD COLUMN respondida TINYINT(1) DEFAULT 0;
+ALTER TABLE respostas 
+    CHANGE COLUMN monitor_id respondente_id INT NOT NULL;
+ALTER TABLE respostas 
+    ADD COLUMN respondente_tipo ENUM('monitor', 'professor') NOT NULL DEFAULT 'monitor';
+
 
 
 

@@ -13,15 +13,16 @@ $oMysql = conecta_db();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $resposta = trim($_POST['resposta']);
     $codigo_pergunta = intval($_POST['codigo_pergunta']);
-    $monitor_id = intval($_POST['monitor_id']);
+    $professor_id = intval($_SESSION['id']);
+    $respondente_tipo = 'professor';
 
-    if ($resposta && $codigo_pergunta && $monitor_id) {
-        $stmt = $oMysql->prepare("INSERT INTO respostas (codigo_pergunta, monitor_id, resposta) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $codigo_pergunta, $monitor_id, $resposta);
+    if ($resposta && $codigo_pergunta) {
+        $stmt = $oMysql->prepare("INSERT INTO respostas (codigo_pergunta, respondente_id, resposta, respondente_tipo) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiss", $codigo_pergunta, $professor_id, $resposta, $respondente_tipo);
 
         if ($stmt->execute()) {
-            // Redireciona de volta com mensagem de sucesso
             header("Location: perguntas_encaminhadas.php?sucesso=1");
+            exit;
         } else {
             echo "Erro ao gravar resposta: " . $stmt->error;
         }

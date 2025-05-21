@@ -34,20 +34,19 @@ if ($conn->connect_error) {
 if ($tipo_usuario === 'monitor') {
     $sql_ranking = "
         SELECT 
-            u.id,
-            u.nome,
             AVG(ar.nota) AS media_avaliacao,
             COUNT(ar.nota) AS total_avaliacoes
-        FROM usuarios u
-        JOIN respostas r ON u.id = r.respondente_id
+        FROM respostas r
         JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
-        WHERE u.tipo_usuario = 'monitor'
-        GROUP BY u.id, u.nome
-        ORDER BY media_avaliacao DESC
-        LIMIT 10
+        WHERE r.respondente_id = ?
     ";
 
-    $result_ranking = $conn->query($sql_ranking);
+    $stmt_ranking = $conn->prepare($sql_ranking);
+    $stmt_ranking->bind_param("i", $usuario_id);
+    $stmt_ranking->execute();
+    $result_ranking = $stmt_ranking->get_result();
+
+    $meu_ranking = $result_ranking->fetch_assoc();
 }
 
 
@@ -199,18 +198,12 @@ while ($row = $res->fetch_assoc()) {
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
         <?php if ($tipo_usuario === 'monitor'): ?>
-            <h4 class="mt-4">Top Monitores</h4>
-            <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
-                <ol class="list-group list-group-numbered">
-                    <?php while ($row = $result_ranking->fetch_assoc()): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <?= htmlspecialchars($row['nome']) ?>
-                            <span class="badge bg-primary rounded-pill"><?= number_format($row['media_avaliacao'], 2) ?> ★</span>
-                        </li>
-                    <?php endwhile; ?>
-                </ol>
+            <h4 class="mt-4">Meu Ranking</h4>
+            <?php if ($meu_ranking && $meu_ranking['total_avaliacoes'] > 0): ?>
+                <p><strong>Total de Avaliações Recebidas:</strong> <?= $meu_ranking['total_avaliacoes'] ?></p>
+                <p><strong>Média das Avaliações:</strong> <?= number_format($meu_ranking['media_avaliacao'], 2) ?> ★</p>
             <?php else: ?>
-                <p>Nenhum monitor avaliado ainda.</p>
+                <p>Você ainda não recebeu avaliações.</p>
             <?php endif; ?>
         <?php endif; ?>
         

@@ -125,6 +125,13 @@ include "header.php";
             </div>
         </a>
 
+        <a href="pesquisar_pergunta.php" class="card-link">
+            <div class="card">
+                <i class="fas fa-search"></i>
+                <span>Pesquisar Pergunta</span>
+            </div>
+        </a>
+
         <a href="minha_conta.php" class="card-link">
             <div class="card">
                 <i class="fas fa-user"></i>

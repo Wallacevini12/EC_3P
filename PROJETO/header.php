@@ -132,10 +132,14 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
+
           <!-- Mostrar "Perguntas" apenas para monitor -->
           <?php if ($_SESSION['tipo_usuario'] === 'monitor'): ?>
             <li class="nav-item">
               <a class="nav-link" href="perguntas_monitor.php"><i class="bi bi-question-square-fill"></i> Perguntas para mim</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="minhas_respostas.php"><i class="bi bi-chat-left-text-fill"></i> Minhas Respostas</a>
             </li>
           <?php endif; ?>
 

@@ -133,8 +133,15 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
+
+
+            <!-- Mostrar "Perguntas respondidas" para todos os usuários desde que logados -->
           <li class="nav-item">
             <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check2-square"></i> Perguntas Respondidas</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="ranking_monitores.php"><i class="bi bi-trophy-fill"></i> Ranking de Monitores</a>
           </li>
 
         <?php else: ?>

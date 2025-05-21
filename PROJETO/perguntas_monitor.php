@@ -100,8 +100,8 @@ if (!$result) {
                             <!-- Botão responder abre modal -->
                             <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#responderModal<?= $row['codigo_pergunta'] ?>">Responder</button>
 
-                            <!-- Botão encaminhar com confirmação -->
-                            <form action="encaminhar_pergunta.php" method="POST" class="d-inline ms-2" onsubmit="return confirmarEncaminhamento();">
+                            <!-- Botão encaminhar faz POST para encaminhar a pergunta -->
+                            <form action="encaminhar_pergunta.php" method="POST" class="d-inline ms-2">
                                 <input type="hidden" name="codigo_pergunta" value="<?= $row['codigo_pergunta'] ?>">
                                 <button type="submit" class="btn btn-primary btn-sm">Encaminhar</button>
                             </form>
@@ -143,13 +143,6 @@ if (!$result) {
         <p class="alert alert-info">Nenhuma pergunta registrada para você no momento.</p>
     <?php endif; ?>
 </div>
-
-<!-- Script de confirmação -->
-<script>
-function confirmarEncaminhamento() {
-    return confirm("Tem certeza que deseja encaminhar esta pergunta?");
-}
-</script>
 
 </body>
 </html>

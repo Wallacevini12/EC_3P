@@ -16,17 +16,12 @@ if ($oMysql->connect_error) {
 
 $id_professor = $_SESSION['id'];
 
-// Aqui você pode implementar lógica para buscar as disciplinas que o professor leciona,
-// caso queira filtrar perguntas por disciplina associada ao professor.
-// Vou assumir que professor pode ver todas as perguntas encaminhadas por enquanto.
-
-// Buscar perguntas encaminhadas (encaminhada = 1)
 $query = "
     SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
     FROM perguntas p
     JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-    WHERE p.encaminhada = 1
+    WHERE p.encaminhada = 1 AND p.status = 'aguardando resposta'
     ORDER BY p.data_criacao DESC
 ";
 
@@ -60,7 +55,7 @@ if (!$result) {
                     <th>Aluno</th>
                     <th>Disciplina</th>
                     <th>Data da Pergunta</th>
-                    <!-- Você pode adicionar coluna para ação se quiser responder aqui -->
+                    <th>Ação</th>
                 </tr>
             </thead>
             <tbody>
@@ -68,9 +63,42 @@ if (!$result) {
                     <tr>
                         <td><?= $row['codigo_pergunta'] ?></td>
                         <td><?= htmlspecialchars(mb_strimwidth($row['enunciado'], 0, 100, '...')) ?></td>
-                        <td><?= htmlspecialchars($row['nome_aluno'], ENT_QUOTES, 'UTF-8') ?></td>
-                        <td><?= htmlspecialchars($row['nome_disciplina'], ENT_QUOTES, 'UTF-8') ?></td>
+                        <td><?= htmlspecialchars($row['nome_aluno']) ?></td>
+                        <td><?= htmlspecialchars($row['nome_disciplina']) ?></td>
                         <td><?= date('d/m/Y H:i', strtotime($row['data_criacao'])) ?></td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalResposta<?= $row['codigo_pergunta'] ?>">
+                                Responder
+                            </button>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="modalResposta<?= $row['codigo_pergunta'] ?>" tabindex="-1" aria-labelledby="respostaModalLabel<?= $row['codigo_pergunta'] ?>" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <form method="POST" action="responder_pergunta_professor.php">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="respostaModalLabel<?= $row['codigo_pergunta'] ?>">Responder Pergunta</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Pergunta:</strong></p>
+                                                <p><?= htmlspecialchars($row['enunciado']) ?></p>
+                                                <div class="form-group">
+                                                    <label for="resposta">Sua resposta:</label>
+                                                    <textarea class="form-control" name="resposta" rows="4" required></textarea>
+                                                    <input type="hidden" name="codigo_pergunta" value="<?= $row['codigo_pergunta'] ?>">
+                                                    <input type="hidden" name="monitor_id" value="<?= $_SESSION['id'] ?>">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="submit" class="btn btn-success">Enviar Resposta</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -83,6 +111,4 @@ if (!$result) {
 </body>
 </html>
 
-<?php
-$oMysql->close();
-?>
+<?php $oMysql->close(); ?>

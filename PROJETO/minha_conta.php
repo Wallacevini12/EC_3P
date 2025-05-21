@@ -198,18 +198,20 @@ while ($row = $res->fetch_assoc()) {
         <p><strong>Email:</strong> <?= htmlspecialchars($dados_usuario['email']) ?></p>
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
-        <h4 class="mt-4">Top Monitores</h4>
-        <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
-            <ol class="list-group list-group-numbered">
-                <?php while ($row = $result_ranking->fetch_assoc()): ?>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <?= htmlspecialchars($row['nome']) ?>
-                        <span class="badge bg-primary rounded-pill"><?= number_format($row['media_avaliacao'], 2) ?> ★</span>
-                    </li>
-                <?php endwhile; ?>
-            </ol>
-        <?php else: ?>
-            <p>Nenhum monitor avaliado ainda.</p>
+        <?php if ($tipo_usuario === 'monitor'): ?>
+            <h4 class="mt-4">Top Monitores</h4>
+            <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
+                <ol class="list-group list-group-numbered">
+                    <?php while ($row = $result_ranking->fetch_assoc()): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <?= htmlspecialchars($row['nome']) ?>
+                            <span class="badge bg-primary rounded-pill"><?= number_format($row['media_avaliacao'], 2) ?> ★</span>
+                        </li>
+                    <?php endwhile; ?>
+                </ol>
+            <?php else: ?>
+                <p>Nenhum monitor avaliado ainda.</p>
+            <?php endif; ?>
         <?php endif; ?>
         
 

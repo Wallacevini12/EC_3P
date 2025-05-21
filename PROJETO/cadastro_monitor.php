@@ -1,18 +1,21 @@
 <?php
-
 session_start();
 include_once 'conecta_db.php'; // Inclui o arquivo de conexão com o banco
+include_once 'header.php';     // Inclui o cabeçalho padrão
+
+// Verifica se o usuário está logado
+if (!isset($_SESSION['id'])) {
+    header('Location: login.php');
+    exit;
+}
 
 $oMysql = conecta_db();
-
 
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-
 $professor_id = $_SESSION['id']; // Obtém o ID do professor da sessão
-
 
 // Buscar disciplinas vinculadas ao professor
 $sql = "SELECT d.codigo_disciplina, d.nome_disciplina
@@ -104,7 +107,6 @@ if (
   <title>Cadastro de Monitor</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>

@@ -119,13 +119,16 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
-          <!-- Mostrar "Lista de Monitores" apenas para professor -->
+          <!-- Header de professor-->
           <?php if ($_SESSION['tipo_usuario'] === 'professor'): ?>
             <li class="nav-item">
               <a class="nav-link" href="lista_monitor.php"><i class="bi bi-people-fill"></i> Lista de Monitores</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="perguntas_encaminhadas.php"><i class="bi bi-send-fill"></i> Perguntas Encaminhadas</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="cadastro_monitor.php"><i class="bi bi-person-plus-fill"></i> Cadastrar Monitor</a>
             </li>
           <?php endif; ?>
 

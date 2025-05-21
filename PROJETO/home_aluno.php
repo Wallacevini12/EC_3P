@@ -82,6 +82,7 @@ include "header.php";
     <h1>Bem-vindo, Aluno!</h1>
 
     <div class="card-container">
+
         <a href="registrar_pergunta.php" class="card-link">
             <div class="card">
                 <i class="fas fa-question-circle"></i>
@@ -103,11 +104,24 @@ include "header.php";
             </div>
         </a>
 
-        <!-- NOVO CARD ADICIONADO AQUI -->
+        <a href="respostas_avaliadas.php" class="card-link">
+            <div class="card">
+                <i class="fas fa-star"></i>
+                <span>Respostas Avaliadas</span>
+            </div>
+        </a>
+
         <a href="perguntas_respondidas.php" class="card-link">
             <div class="card">
                 <i class="fas fa-check-circle"></i>
                 <span>Perguntas Respondidas</span>
+            </div>
+        </a>
+
+        <a href="ranking_monitores.php" class="card-link">
+            <div class="card">
+                <i class="fas fa-trophy"></i>
+                <span>Ranking de Monitores</span>
             </div>
         </a>
 
@@ -124,6 +138,7 @@ include "header.php";
                 <span>Sair</span>
             </div>
         </a>
+
     </div>
 
 </body>

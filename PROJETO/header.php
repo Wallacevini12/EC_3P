@@ -20,18 +20,21 @@ if (session_status() === PHP_SESSION_NONE) {
     .navbar .navbar-brand,
     .navbar .navbar-text {
       color: greenyellow ;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
   }
 
     .navbar .nav-link:hover,
     .navbar .navbar-brand:hover {
       color: #adff2f; /* Tom levemente diferente ao passar o mouse */
+      transform: scale(1.1);
+      transition: transform 0.3s ease;
+      text-decoration: underline;
   }
     .navbar-separator {
     border-left: 2px solid greenyellow;
     height: 40px;
     margin-left: 20px;
-    margin-right: 20px;
+    margin-right: 10px;
   }
   
   body {

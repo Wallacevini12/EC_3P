@@ -31,11 +31,11 @@ $query = "
         d.nome_disciplina, 
         r.resposta,
         r.codigo_resposta,
-        ar.nota AS nota_avaliacao  -- usa a tabela avaliacoes_respostas e coluna nota
+        a.nota AS nota_avaliacao
     FROM perguntas p
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-    LEFT JOIN avaliacoes_respostas ar ON r.codigo_resposta = ar.codigo_resposta AND ar.aluno_id = ? 
+    LEFT JOIN avaliacoes a ON r.codigo_resposta = a.resposta_id AND a.aluno_id = ? 
     WHERE p.usuario_codigo = ?
     ORDER BY p.data_criacao DESC
 ";

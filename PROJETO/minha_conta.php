@@ -198,39 +198,20 @@ while ($row = $res->fetch_assoc()) {
         <p><strong>Email:</strong> <?= htmlspecialchars($dados_usuario['email']) ?></p>
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
-        <?php if ($tipo_usuario === 'monitor'): ?>
-        <h3>Ranking dos Monitores</h3>
+        <h4 class="mt-4">Top Monitores</h4>
         <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Posição</th>
-                        <th>Nome do Monitor</th>
-                        <th>Média da Avaliação</th>
-                        <th>Total de Avaliações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $posicao = 1;
-                    while ($row = $result_ranking->fetch_assoc()):
-                    ?>
-                    <tr>
-                        <td><?= $posicao ?></td>
-                        <td><?= htmlspecialchars($row['nome']) ?></td>
-                        <td><?= number_format($row['media_avaliacao'], 2) ?></td>
-                        <td><?= $row['total_avaliacoes'] ?></td>
-                    </tr>
-                    <?php 
-                    $posicao++;
-                    endwhile; 
-                    ?>
-                </tbody>
-            </table>
+            <ol class="list-group list-group-numbered">
+                <?php while ($row = $result_ranking->fetch_assoc()): ?>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <?= htmlspecialchars($row['nome']) ?>
+                        <span class="badge bg-primary rounded-pill"><?= number_format($row['media_avaliacao'], 2) ?> ★</span>
+                    </li>
+                <?php endwhile; ?>
+            </ol>
         <?php else: ?>
             <p>Nenhum monitor avaliado ainda.</p>
         <?php endif; ?>
-    <?php endif; ?>
+        
 
         <p><strong>Disciplinas Vinculadas:</strong></p>
         <?php if (!empty($disciplinas)): ?>

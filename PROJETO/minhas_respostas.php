@@ -41,24 +41,42 @@ $result = $stmt->get_result();
 ?>
 
 <div class="container mt-4">
-    <h2>Minhas Respostas</h2>
+    <h3 class="mb-4">Minhas Respostas</h3>
 
     <?php if ($result->num_rows > 0): ?>
         <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+                // Define classe Bootstrap para o status
+                if ($row['status'] === 'respondida') {
+                    $statusClass = 'badge bg-success';
+                } elseif ($row['status'] === 'aguardando resposta') {
+                    $statusClass = 'badge bg-danger';
+                } else {
+                    $statusClass = 'badge bg-secondary';
+                }
+            ?>
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <div class="d-flex flex-wrap gap-2">
-                        <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
-                        <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
-                        <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?></span>
-                        <span class="tag status-respondida"><strong>Status:</strong> Respondida</span>
+                        <span class="badge bg-secondary">
+                            <strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?>
+                        </span>
+                        <span class="badge bg-secondary">
+                            <strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?>
+                        </span>
+                        <span class="badge bg-secondary">
+                            <strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?>
+                        </span>
+                        <span class="<?= $statusClass ?>">
+                            <strong>Status:</strong> <?= ucfirst($row['status']) ?>
+                        </span>
                     </div>
                 </div>
                 <div class="card-body">
                     <p><strong>Enunciado:</strong><br><?= nl2br(htmlspecialchars($row['enunciado'], ENT_QUOTES, 'UTF-8')) ?></p>
                     <hr>
                     <p><strong>Minha Resposta:</strong><br><?= nl2br(htmlspecialchars($row['resposta'], ENT_QUOTES, 'UTF-8')) ?></p>
-
+                    
                     <?php if ($row['nota'] !== null): ?>
                         <hr>
                         <p><strong>Avaliação:</strong> 
@@ -76,6 +94,7 @@ $result = $stmt->get_result();
         <div class="alert alert-info">Você ainda não respondeu nenhuma pergunta.</div>
     <?php endif; ?>
 </div>
+
 
 <?php
 $stmt->close();

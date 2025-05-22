@@ -97,17 +97,11 @@ include "header.php";
             </a>
         </div>
 
-        <div class="col-6 col-md-4">
-            <a href="ranking_monitores.php" class="dashboard-card">
-                <i class="bi bi-trophy-fill dashboard-icon"></i>
-                <p class="dashboard-title">Ranking de Monitores</p>
-            </a>
-        </div>
 
         <div class="col-6 col-md-4">
-            <a href="pesquisar_pergunta.php" class="dashboard-card">
-                <i class="bi bi-search dashboard-icon"></i>
-                <p class="dashboard-title">Pesquisar Pergunta</p>
+            <a href="todas_perguntas.php" class="dashboard-card">
+                <i class="bi bi-list-ul dashboard-icon"></i>
+                <p class="dashboard-title">Todas as Perguntas</p>
             </a>
         </div>
 

@@ -84,10 +84,7 @@ if (isset($_GET['buscar'])) {
 <div class="container">
     <h1 class="mb-4 text-center">Pesquisar Perguntas</h1>
 
-    <form method="GET" action="pesquisar_pergunta.php" class="mb-5 text-center">
-        <input type="text" name="buscar" placeholder="Digite palavras-chave..." value="<?= htmlspecialchars($buscar) ?>" class="form-control d-inline-block" style="width: 300px;" />
-        <button type="submit" class="btn btn-success ms-2">Pesquisar</button>
-    </form>
+    <!-- Formulário de pesquisa removido daqui -->
 
     <?php if (isset($_GET['buscar'])): ?>
 

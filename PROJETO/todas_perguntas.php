@@ -1,38 +1,57 @@
 <?php
 session_start();
+if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+    header("Location: login.php");
+    exit;
+}
 
-include_once 'conecta_db.php';
 include "header.php";
+include_once 'conecta_db.php';
 
-// Conecta ao banco
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
+// Buscar todas as perguntas, sem filtro
 $query = "
     SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
-           u.nome AS nome_aluno, 
-           d.nome_disciplina, 
+           u.nome AS nome_aluno,
+           d.nome_disciplina,
            r.resposta,
            r.codigo_resposta
     FROM perguntas p
     JOIN usuarios u ON p.usuario_codigo = u.id
     JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
     LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-    WHERE DATE(p.data_criacao) = CURDATE()
     ORDER BY p.data_criacao DESC
 ";
 
 $result = $oMysql->query($query);
+$resultados = [];
+
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        $resultados[] = $row;
+    }
+}
 ?>
 
-<div class="container mt-4">
-    <h3 class="mb-4">Perguntas Recentes</h3>
+<style>
+    body {
+        padding-top: 100px;
+        background-color: #f4f4f4;
+    }
+</style>
 
-    <?php if ($result->num_rows > 0): ?>
-        <?php while ($row = $result->fetch_assoc()): 
-            // Define classe Bootstrap para o status
+<div class="container">
+    <h1 class="mb-4 text-center">Todas as Perguntas</h1>
+
+    <?php if (count($resultados) > 0): ?>
+        <?php foreach ($resultados as $row): 
+            // Define classes Bootstrap para o status
+            $statusClass = '';
+            $statusLabel = ucfirst($row['status']);
             if ($row['status'] === 'respondida') {
                 $statusClass = 'badge bg-success';
             } elseif ($row['status'] === 'aguardando resposta') {
@@ -54,7 +73,7 @@ $result = $oMysql->query($query);
                             <strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?>
                         </span>
                         <span class="<?= $statusClass ?>">
-                            <strong>Status:</strong> <?= ucfirst($row['status']) ?>
+                            <strong>Status:</strong> <?= $statusLabel ?>
                         </span>
                     </div>
                 </div>
@@ -67,9 +86,9 @@ $result = $oMysql->query($query);
                     <?php endif; ?>
                 </div>
             </div>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
     <?php else: ?>
-        <div class="alert alert-info">Nenhuma pergunta encontrada.</div>
+        <div class="alert alert-info text-center">Nenhuma pergunta cadastrada.</div>
     <?php endif; ?>
 </div>
 

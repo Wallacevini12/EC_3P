@@ -63,7 +63,7 @@ $result = $stmt->get_result();
                         <td><?= htmlspecialchars($row['enunciado']) ?></td>
                         <td><?= htmlspecialchars($row['nome_disciplina']) ?></td>
                         <td><?= nl2br(htmlspecialchars($row['resposta'])) ?></td>
-                        <td><?= htmlspecialchars($row['nome_respondente']) ?> (<?= htmlspecialchars($row['respondente_tipo']) ?>)</td>
+                        <td><?= htmlspecialchars($row['nome_respondente']) ?></td>
                         <td>
                             <?= str_repeat('⭐', (int)$row['nota']) ?>
                             <?= $row['nota'] ?> estrela<?= $row['nota'] != 1 ? 's' : '' ?>

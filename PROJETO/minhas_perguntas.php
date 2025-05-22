@@ -43,17 +43,30 @@ $result = $stmt->get_result();
     <h3 class="mb-4">Minhas Perguntas</h3>
 
     <?php if ($result->num_rows > 0): ?>
-        <?php while ($row = $result->fetch_assoc()): 
-            $status = !empty($row['resposta']) ? 'respondida' : 'aguardando';
-            $statusClass = $status === 'respondida' ? 'status-respondida' : 'status-aguardando';
-        ?>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <?php
+                $status = !empty($row['resposta']) ? 'respondida' : 'aguardando resposta';
+                if ($status === 'respondida') {
+                    $statusClass = 'badge bg-success';
+                } else {
+                    $statusClass = 'badge bg-danger';
+                }
+            ?>
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <div class="d-flex flex-wrap gap-2">
-                        <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
-                        <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
-                        <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($_SESSION['nome']) ?></span>
-                        <span class="tag <?= $statusClass ?>"><strong>Status:</strong> <?= ucfirst($status) ?></span>
+                        <span class="badge bg-secondary">
+                            <strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?>
+                        </span>
+                        <span class="badge bg-secondary">
+                            <strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?>
+                        </span>
+                        <span class="badge bg-secondary">
+                            <strong>Aluno:</strong> <?= htmlspecialchars($_SESSION['nome']) ?>
+                        </span>
+                        <span class="<?= $statusClass ?>">
+                            <strong>Status:</strong> <?= ucfirst($status) ?>
+                        </span>
                     </div>
                 </div>
                 <div class="card-body">

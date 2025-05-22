@@ -30,6 +30,7 @@ if (isset($_GET['buscar'])) {
                 $condicoes[] = "(" .
                     "p.enunciado LIKE '%$palavra%' OR " .
                     "u.nome LIKE '%$palavra%' OR " .
+                    "resp.nome LIKE '%$palavra%' OR " .        // <== adiciona busca pelo nome do respondente
                     "d.nome_disciplina LIKE '%$palavra%' OR " .
                     "DATE_FORMAT(p.data_criacao, '%d/%m/%Y') LIKE '%$palavra%'" .
                 ")";
@@ -39,16 +40,19 @@ if (isset($_GET['buscar'])) {
         if (count($condicoes) > 0) {
             $where = implode(' AND ', $condicoes);
 
+            // Ajuste na query para buscar nome do respondente
             $query = "
                 SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
-                       u.nome AS nome_aluno,
-                       d.nome_disciplina,
-                       r.resposta,
-                       r.codigo_resposta
+                    u.nome AS nome_aluno,
+                    d.nome_disciplina,
+                    r.resposta,
+                    r.codigo_resposta,
+                    resp.nome AS nome_respondente  -- adiciona o nome do respondente
                 FROM perguntas p
                 JOIN usuarios u ON p.usuario_codigo = u.id
                 JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
                 LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
+                LEFT JOIN usuarios resp ON r.respondente_id = resp.id  -- join para pegar nome do respondente
                 WHERE $where
                 ORDER BY p.data_criacao DESC
             ";
@@ -91,6 +95,11 @@ if (isset($_GET['buscar'])) {
                             <span class="badge bg-secondary">
                                 <strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?>
                             </span>
+                            <?php if (!empty($row['nome_respondente'])): ?>
+                                <span class="badge bg-info">
+                                    <strong>Respondente:</strong> <?= htmlspecialchars($row['nome_respondente']) ?>
+                                </span>
+                            <?php endif; ?>
                             <span class="<?= $statusClass ?>">
                                 <strong>Status:</strong> <?= ucfirst($row['status']) ?>
                             </span>

@@ -51,7 +51,7 @@ $result = $oMysql->query($query);
                         <span class="badge bg-secondary">
                             <strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?>
                         </span>
-                        <span class="badge bg-primary">
+                        <span class="badge bg-info">
                             <strong>Respondido por:</strong> <?= htmlspecialchars($row['nome_respondente']) ?>
                         </span>
                         <span class="badge bg-success">

@@ -24,62 +24,92 @@ if (isset($_SESSION['id']) && isset($_SESSION['tipo_usuario'])) {
   <title>LearnHub - Página Inicial</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 20px;
       text-align: center;
-      padding-top: 100px;
-      background-color: #f4f4f4;
     }
 
-    h1 {
-      color: #333;
-      font-weight: bold;
+    .brand-logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
     }
 
-    .button-container {
-      margin-top: 30px;
+    .brand-title {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #0d6efd;
+      margin-bottom: 10px;
     }
 
-    .btn {
-      display: inline-block;
+    .brand-subtitle {
+      font-size: 1.25rem;
+      color: #555;
+      margin-bottom: 40px;
+    }
+
+    .btn-home {
+      font-size: 1.1rem;
       padding: 12px 24px;
       margin: 10px;
-      font-size: 16px;
-      color: white;
-      background-color: #007bff;
-      border: none;
       border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background-color 0.3s;
+      transition: transform 0.2s ease-in-out;
     }
 
-    .btn:hover {
-      background-color: #0056b3;
+    .btn-home:hover {
+      transform: translateY(-3px);
     }
 
     footer {
-      margin-top: 80px;
+      text-align: center;
+      padding: 15px;
+      background-color: #f1f1f1;
       font-size: 0.9rem;
-      color: #888;
+      color: #666;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Bem-vindo ao LearnHub!</h1>
+  <div class="main-content">
+    <img src="images/logo.png" alt="Logo LearnHub" class="brand-logo">
 
-  <div class="button-container">
-    <a href="login.php" class="btn">Login</a>
-    <a href="cadastro.php?tipo=aluno" class="btn">Cadastrar como Aluno</a>
-    <a href="cadastro.php?tipo=professor" class="btn">Cadastrar como Professor</a>
+    <div class="brand-title">
+      <i class="bi bi-lightbulb-fill me-2"></i>LearnHub
+    </div>
+    <div class="brand-subtitle">A sua plataforma de aprendizado e colaboração acadêmica</div>
+
+    <div>
+      <a href="login.php" class="btn btn-primary btn-home">
+        <i class="bi bi-box-arrow-in-right me-1"></i> Login
+      </a>
+      <a href="cadastro.php?tipo=aluno" class="btn btn-success btn-home">
+        <i class="bi bi-person-plus-fill me-1"></i> Cadastrar como Aluno
+      </a>
+      <a href="cadastro.php?tipo=professor" class="btn btn-warning btn-home text-white">
+        <i class="bi bi-person-workspace me-1"></i> Cadastrar como Professor
+      </a>
+    </div>
   </div>
 
   <footer>
-    <p>&copy; <?php echo date("Y"); ?> LearnHub. Todos os direitos reservados.</p>
+    &copy; <?= date("Y") ?> LearnHub. Todos os direitos reservados.
   </footer>
 
 </body>

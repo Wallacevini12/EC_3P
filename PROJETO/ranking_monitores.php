@@ -16,11 +16,11 @@ $sql_ranking = "
     SELECT 
         u.id,
         u.nome,
-        AVG(ar.nota) AS media_avaliacao,
+        COALESCE(AVG(ar.nota), 0) AS media_avaliacao,
         COUNT(ar.nota) AS total_avaliacoes
     FROM usuarios u
-    JOIN respostas r ON u.id = r.respondente_id
-    JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
+    LEFT JOIN respostas r ON u.id = r.respondente_id
+    LEFT JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
     WHERE u.tipo_usuario = 'monitor'
     GROUP BY u.id, u.nome
     ORDER BY media_avaliacao DESC
@@ -44,7 +44,12 @@ $result_ranking = $conn->query($sql_ranking);
     <?php if ($result_ranking && $result_ranking->num_rows > 0): ?>
         <ol class="list-group list-group-numbered mt-4">
             <?php while ($row = $result_ranking->fetch_assoc()): ?>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
+                <?php
+                    // Verifica se este monitor é o usuário logado
+                    $is_logado = ($row['id'] == $_SESSION['id']);
+                    $classe_destque = $is_logado ? 'bg-warning fw-bold' : '';
+                ?>
+                <li class="list-group-item d-flex justify-content-between align-items-center <?= $classe_destque ?>">
                     <?= htmlspecialchars($row['nome']) ?>
                     <span class="badge bg-primary rounded-pill">
                         <?= number_format($row['media_avaliacao'], 2) ?> ★ (<?= $row['total_avaliacoes'] ?> avaliações)

@@ -76,7 +76,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         <?php if (isset($_SESSION['id'])): ?>
           <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
-            <!-- Dropdown agrupado para Perguntas -->
+            <!-- Dropdown agrupado para Perguntas (Aluno) -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="perguntasDropdown" role="button" data-bs-toggle="dropdown">
                 <i class="bi bi-question-circle-fill"></i> Perguntas
@@ -88,21 +88,31 @@ if (session_status() === PHP_SESSION_NONE) {
                 <li><a class="dropdown-item" href="respostas_avaliadas.php">Respostas Avaliadas</a></li>
               </ul>
             </li>
-          <?php endif; ?>
 
-          <?php if ($_SESSION['tipo_usuario'] === 'professor'): ?>
-            <li class="nav-item">
-              <a class="nav-link" href="lista_monitor.php"><i class="bi bi-people-fill"></i> Lista de Monitores</a>
+          <?php elseif ($_SESSION['tipo_usuario'] === 'professor'): ?>
+            <!-- Dropdown: Monitores -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="dropdownMonitores" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-people-fill"></i> Monitores
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMonitores">
+                <li><a class="dropdown-item" href="lista_monitor.php">Lista de Monitores</a></li>
+                <li><a class="dropdown-item" href="cadastro_monitor.php">Cadastrar Monitor</a></li>
+              </ul>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="perguntas_encaminhadas.php"><i class="bi bi-send-fill"></i> Perguntas Encaminhadas</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="cadastro_monitor.php"><i class="bi bi-person-plus-fill"></i> Cadastrar Monitor</a>
-            </li>
-          <?php endif; ?>
 
-          <?php if ($_SESSION['tipo_usuario'] === 'monitor'): ?>
+            <!-- Dropdown: Perguntas -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="dropdownPerguntas" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-question-circle-fill"></i> Perguntas
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownPerguntas">
+                <li><a class="dropdown-item" href="perguntas_encaminhadas.php">Encaminhadas</a></li>
+                <li><a class="dropdown-item" href="perguntas_respondidas.php">Respondidas</a></li>
+              </ul>
+            </li>
+
+          <?php elseif ($_SESSION['tipo_usuario'] === 'monitor'): ?>
             <li class="nav-item">
               <a class="nav-link" href="perguntas_monitor.php"><i class="bi bi-question-square-fill"></i> Perguntas para mim</a>
             </li>
@@ -111,7 +121,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
-          <!-- Itens comuns a todos os usuários -->
+          <!-- Itens comuns a todos -->
           <li class="nav-item">
             <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check2-square"></i> Perguntas Respondidas</a>
           </li>
@@ -148,6 +158,5 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 </body>
 </html>

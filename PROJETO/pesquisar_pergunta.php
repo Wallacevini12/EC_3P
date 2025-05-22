@@ -27,7 +27,12 @@ if (isset($_GET['buscar'])) {
         foreach ($palavras as $palavra) {
             $palavra = trim($palavra);
             if ($palavra !== '') {
-                $condicoes[] = "p.enunciado LIKE '%$palavra%'";
+                $condicoes[] = "(" .
+                    "p.enunciado LIKE '%$palavra%' OR " .
+                    "u.nome LIKE '%$palavra%' OR " .
+                    "d.nome_disciplina LIKE '%$palavra%' OR " .
+                    "DATE_FORMAT(p.data_criacao, '%d/%m/%Y') LIKE '%$palavra%'" .
+                ")";
             }
         }
 
@@ -59,46 +64,36 @@ if (isset($_GET['buscar'])) {
 }
 ?>
 
-<style>
-    body {
-        padding-top: 40px;
-        background-color: #f4f4f4;
-    }
-    .tag {
-        background: #e9ecef;
-        padding: 5px 10px;
-        border-radius: 15px;
-        font-size: 0.85rem;
-        color: #495057;
-    }
-    .status-respondida {
-        background-color: #d4edda !important;
-        color: #155724 !important;
-    }
-    .status-aguardando {
-        background-color: #f8d7da !important;
-        color: #721c24 !important;
-    }
-</style>
-
-<div class="container">
-    <h1 class="mb-4 text-center">Pesquisar Perguntas</h1>
-
-    <!-- Formulário de pesquisa removido daqui -->
+<div class="container mt-4">
+    <h3 class="mb-4 text-center">Resultados</h3>
 
     <?php if (isset($_GET['buscar'])): ?>
-
         <?php if (count($resultados) > 0): ?>
-            <?php foreach ($resultados as $row): 
-                $statusClass = $row['status'] === 'respondida' ? 'status-respondida' : 'status-aguardando';
+            <?php foreach ($resultados as $row):
+                // Define classe Bootstrap para o status
+                if ($row['status'] === 'respondida') {
+                    $statusClass = 'badge bg-success';
+                } elseif ($row['status'] === 'aguardando resposta') {
+                    $statusClass = 'badge bg-danger';
+                } else {
+                    $statusClass = 'badge bg-secondary';
+                }
             ?>
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white">
                         <div class="d-flex flex-wrap gap-2">
-                            <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
-                            <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
-                            <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?></span>
-                            <span class="tag <?= $statusClass ?>"><strong>Status:</strong> <?= ucfirst($row['status']) ?></span>
+                            <span class="badge bg-secondary">
+                                <strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?>
+                            </span>
+                            <span class="badge bg-secondary">
+                                <strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?>
+                            </span>
+                            <span class="badge bg-secondary">
+                                <strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?>
+                            </span>
+                            <span class="<?= $statusClass ?>">
+                                <strong>Status:</strong> <?= ucfirst($row['status']) ?>
+                            </span>
                         </div>
                     </div>
                     <div class="card-body">
@@ -112,10 +107,7 @@ if (isset($_GET['buscar'])) {
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <div class="alert alert-info text-center">Nenhuma pergunta encontrada para sua busca.</div>
+            <div class="alert alert-info">Nenhuma pergunta encontrada.</div>
         <?php endif; ?>
-
     <?php endif; ?>
 </div>
-
-<?php $oMysql->close(); ?>

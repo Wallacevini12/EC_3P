@@ -74,7 +74,6 @@ if (session_status() === PHP_SESSION_NONE) {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.375rem 0.75rem;
   }
 
   .search-form button:hover {
@@ -134,6 +133,17 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
 
           <?php elseif ($_SESSION['tipo_usuario'] === 'professor'): ?>
+
+           <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="dropdownMonitores" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-people-fill me-1"></i> Monitores
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMonitores">
+                <li><a class="dropdown-item" href="lista_monitor.php"><i class="bi bi-list-ul me-1"></i> Lista de Monitores</a></li>
+                <li><a class="dropdown-item" href="cadastro_monitor.php"><i class="bi bi-person-plus-fill me-1"></i> Cadastrar Monitor</a></li>
+              </ul>
+           </li>
+
            <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="dropdownPerguntas" role="button" data-bs-toggle="dropdown">
                 <i class="bi bi-question-circle-fill me-1"></i> Perguntas
@@ -170,6 +180,25 @@ if (session_status() === PHP_SESSION_NONE) {
               </ul>
             </li>
           <?php endif; ?>
+
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="listasDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-list-ul me-1"></i> Listas
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="listasDropdown">
+              <li>
+                <a class="dropdown-item" href="lista_todos_monitores.php">
+                  <i class="bi bi-people-fill me-1"></i> Lista de Monitores
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="lista_professores.php">
+                  <i class="bi bi-person-badge-fill me-1"></i> Lista de Professores
+                </a>
+              </li>
+            </ul>
+          </li>
 
 
 

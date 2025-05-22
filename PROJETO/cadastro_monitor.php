@@ -111,10 +111,6 @@ if (
 </head>
 <body>
 
-<!-- Botão voltar fora do card -->
-<div class="container mt-3">
-  <a href="home_professor.php" class="btn btn-secondary btn-sm">&larr; Voltar</a>
-</div>
 
 <!-- Card centralizado com o formulário -->
 <div class="container d-flex justify-content-center align-items-center min-vh-100">

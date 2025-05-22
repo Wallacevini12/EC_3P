@@ -16,25 +16,47 @@ if ($oMysql->connect_error) {
 
 $id_professor = $_SESSION['id'];
 
-$query = "
-    SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
-    FROM perguntas p
-    JOIN usuarios u ON p.usuario_codigo = u.id
-    JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-    WHERE p.encaminhada = 1 AND p.status = 'aguardando resposta'
-    ORDER BY p.data_criacao DESC
-";
+// Buscar as disciplinas que o professor ministra
+$sql_disciplinas = "SELECT disciplina_codigo FROM professores_possuem_disciplinas WHERE professor_codigo = $id_professor";
+$res_disciplinas = $oMysql->query($sql_disciplinas);
 
-$result = $oMysql->query($query);
-if (!$result) {
-    die("Erro ao buscar perguntas encaminhadas: " . $oMysql->error);
+$disciplinas = [];
+if ($res_disciplinas) {
+    while ($row = $res_disciplinas->fetch_assoc()) {
+        $disciplinas[] = $row['disciplina_codigo'];
+    }
+}
+
+$perguntas = [];
+
+if (count($disciplinas) > 0) {
+    $lista_disciplinas = implode(',', $disciplinas);
+
+    // Buscar perguntas encaminhadas com disciplina correspondente
+    $query = "
+        SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, u.nome AS nome_aluno, d.nome_disciplina
+        FROM perguntas p
+        JOIN usuarios u ON p.usuario_codigo = u.id
+        JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+        WHERE p.encaminhada = 1
+          AND p.status = 'aguardando resposta'
+          AND p.disciplina_codigo IN ($lista_disciplinas)
+        ORDER BY p.data_criacao DESC
+    ";
+
+    $result = $oMysql->query($query);
+    if (!$result) {
+        die("Erro ao buscar perguntas encaminhadas: " . $oMysql->error);
+    }
+} else {
+    $result = false; // Nenhuma disciplina atribuída ao professor
 }
 ?>
 
 <div class="container mt-4">
     <h3 class="mb-4">Perguntas Encaminhadas para Professor</h3>
 
-    <?php if ($result->num_rows > 0): ?>
+    <?php if ($result && $result->num_rows > 0): ?>
         <?php while ($row = $result->fetch_assoc()): ?>
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
@@ -77,7 +99,7 @@ if (!$result) {
                                     <label for="resposta">Sua resposta:</label>
                                     <textarea class="form-control" name="resposta" rows="4" required></textarea>
                                     <input type="hidden" name="codigo_pergunta" value="<?= $row['codigo_pergunta'] ?>">
-                                    <input type="hidden" name="monitor_id" value="<?= $_SESSION['id'] ?>">
+                                    <input type="hidden" name="professor_id" value="<?= $_SESSION['id'] ?>">
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -90,7 +112,7 @@ if (!$result) {
             </div>
         <?php endwhile; ?>
     <?php else: ?>
-        <div class="alert alert-info">Nenhuma pergunta encaminhada no momento.</div>
+        <div class="alert alert-info">Nenhuma pergunta encaminhada para as suas disciplinas no momento.</div>
     <?php endif; ?>
 </div>
 

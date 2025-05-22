@@ -49,7 +49,6 @@ if (isset($_GET['buscar'])) {
             ";
 
             $result = $oMysql->query($query);
-
             if ($result) {
                 while ($row = $result->fetch_assoc()) {
                     $resultados[] = $row;
@@ -60,43 +59,33 @@ if (isset($_GET['buscar'])) {
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Pesquisar Pergunta</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body {
-            padding-top: 40px;
-            background-color: #f4f4f4;
-        }
-        .tag {
-            background: #e9ecef;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.85rem;
-            color: #495057;
-        }
-        .status-respondida {
-            background-color: #d4edda !important;
-            color: #155724 !important;
-        }
-        .status-aguardando {
-            background-color: #f8d7da !important;
-            color: #721c24 !important;
-        }
-    </style>
-</head>
-<body>
+<style>
+    body {
+        padding-top: 40px;
+        background-color: #f4f4f4;
+    }
+    .tag {
+        background: #e9ecef;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        color: #495057;
+    }
+    .status-respondida {
+        background-color: #d4edda !important;
+        color: #155724 !important;
+    }
+    .status-aguardando {
+        background-color: #f8d7da !important;
+        color: #721c24 !important;
+    }
+</style>
 
 <div class="container">
-    <h1 class="mb-4"></h1>
+    <h1 class="mb-4 text-center">Pesquisar Perguntas</h1>
 
-    <form method="GET" action="pesquisar_pergunta.php" class="mb-5 text-center" style="margin-top: 60px;">
-        <input type="text" name="buscar" placeholder="Digite palavras-chave..." value="<?php echo htmlspecialchars($buscar); ?>" class="form-control d-inline-block" style="width: 300px;" />
+    <form method="GET" action="pesquisar_pergunta.php" class="mb-5 text-center">
+        <input type="text" name="buscar" placeholder="Digite palavras-chave..." value="<?= htmlspecialchars($buscar) ?>" class="form-control d-inline-block" style="width: 300px;" />
         <button type="submit" class="btn btn-success ms-2">Pesquisar</button>
     </form>
 
@@ -126,14 +115,10 @@ if (isset($_GET['buscar'])) {
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <div class="alert alert-info">Nenhuma pergunta encontrada para sua busca.</div>
+            <div class="alert alert-info text-center">Nenhuma pergunta encontrada para sua busca.</div>
         <?php endif; ?>
+
     <?php endif; ?>
 </div>
 
-</body>
-</html>
-
-<?php
-$oMysql->close();
-?>
+<?php $oMysql->close(); ?>

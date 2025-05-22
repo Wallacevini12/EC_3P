@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 require_once 'conecta_db.php';
 include "header.php";
 
@@ -9,52 +10,32 @@ if (!isset($_SESSION['id'])) {
 }
 
 $pagina_voltar = 'index.php';
-
-if (isset($_SESSION['tipo_usuario'])) {
-    if ($_SESSION['tipo_usuario'] === 'aluno') {
-        $pagina_voltar = 'home_aluno.php';
-    } elseif ($_SESSION['tipo_usuario'] === 'professor') {
-        $pagina_voltar = 'home_professor.php';
-    } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
-        $pagina_voltar = 'home_monitor.php';
-    }
-}
+if ($_SESSION['tipo_usuario'] === 'aluno') $pagina_voltar = 'home_aluno.php';
+elseif ($_SESSION['tipo_usuario'] === 'professor') $pagina_voltar = 'home_professor.php';
+elseif ($_SESSION['tipo_usuario'] === 'monitor') $pagina_voltar = 'home_monitor.php';
 
 $usuario_id = $_SESSION['id'];
 $tipo_usuario = $_SESSION['tipo_usuario'];
-
 $conn = conecta_db();
+if ($conn->connect_error) die("Erro na conexão: " . $conn->connect_error);
 
-if ($conn->connect_error) {
-    die("Erro na conexão: " . $conn->connect_error);
-}
-
-// Se for monitor, calcula o ranking
-
+// Se for monitor, busca o ranking
+$meu_ranking = null;
 if ($tipo_usuario === 'monitor') {
     $sql_ranking = "
-        SELECT 
-            AVG(ar.nota) AS media_avaliacao,
-            COUNT(ar.nota) AS total_avaliacoes
+        SELECT AVG(ar.nota) AS media_avaliacao, COUNT(ar.nota) AS total_avaliacoes
         FROM respostas r
         JOIN avaliacoes ar ON r.codigo_resposta = ar.resposta_id
         WHERE r.respondente_id = ?
     ";
-
     $stmt_ranking = $conn->prepare($sql_ranking);
     $stmt_ranking->bind_param("i", $usuario_id);
     $stmt_ranking->execute();
     $result_ranking = $stmt_ranking->get_result();
-
     $meu_ranking = $result_ranking->fetch_assoc();
 }
 
-
-
-// Identifica tabela e coluna conforme tipo de usuário
-$tabela_vinculo = '';
-$coluna_usuario = '';
-
+// Tabela de vínculo por tipo
 switch ($tipo_usuario) {
     case 'professor':
         $tabela_vinculo = 'professores_possuem_disciplinas';
@@ -70,26 +51,20 @@ switch ($tipo_usuario) {
         break;
 }
 
-// Atualiza disciplinas se o formulário foi enviado
+// Atualiza disciplinas
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Remove vínculos antigos
     $sql_delete = "DELETE FROM $tabela_vinculo WHERE $coluna_usuario = ?";
     $stmt_delete = $conn->prepare($sql_delete);
     $stmt_delete->bind_param("i", $usuario_id);
     $stmt_delete->execute();
 
-    // Monitor: aceita apenas uma disciplina
     if ($tipo_usuario === 'monitor' && isset($_POST['disciplina'])) {
         $codigo = (int) $_POST['disciplina'];
-        $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
-        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert = $conn->prepare("INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)");
         $stmt_insert->bind_param("ii", $usuario_id, $codigo);
         $stmt_insert->execute();
-
-    // Aluno e professor: múltiplas disciplinas
     } elseif (in_array($tipo_usuario, ['aluno', 'professor']) && isset($_POST['disciplinas'])) {
-        $sql_insert = "INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)";
-        $stmt_insert = $conn->prepare($sql_insert);
+        $stmt_insert = $conn->prepare("INSERT INTO $tabela_vinculo ($coluna_usuario, disciplina_codigo) VALUES (?, ?)");
         foreach ($_POST['disciplinas'] as $codigo) {
             $codigo = (int) $codigo;
             $stmt_insert->bind_param("ii", $usuario_id, $codigo);
@@ -101,20 +76,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Exclusão de conta
 if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
     $conn->begin_transaction();
-
     try {
-        $sql_delete_aluno = "DELETE FROM aluno WHERE id = ?";
-        $stmt = $conn->prepare($sql_delete_aluno);
+        $stmt = $conn->prepare("DELETE FROM aluno WHERE id = ?");
         $stmt->bind_param("i", $usuario_id);
         $stmt->execute();
 
-        $sql_delete_prof = "DELETE FROM professor WHERE id = ?";
-        $stmt = $conn->prepare($sql_delete_prof);
+        $stmt = $conn->prepare("DELETE FROM professor WHERE id = ?");
         $stmt->bind_param("i", $usuario_id);
         $stmt->execute();
 
-        $sql_delete_user = "DELETE FROM usuarios WHERE id = ?";
-        $stmt = $conn->prepare($sql_delete_user);
+        $stmt = $conn->prepare("DELETE FROM usuarios WHERE id = ?");
         $stmt->bind_param("i", $usuario_id);
         $stmt->execute();
 
@@ -128,66 +99,38 @@ if (isset($_GET['excluir']) && $_GET['excluir'] == 'sim') {
     }
 }
 
-// Busca dados do usuário
-$sql = "SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?";
-$stmt = $conn->prepare($sql);
+// Dados do usuário
+$stmt = $conn->prepare("SELECT nome, email, curso, tipo_usuario FROM usuarios WHERE id = ?");
 $stmt->bind_param("i", $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if ($result->num_rows === 0) {
-    echo "Usuário não encontrado.";
-    exit();
-}
-
+if ($result->num_rows === 0) exit("Usuário não encontrado.");
 $dados_usuario = $result->fetch_assoc();
 
-// Pega disciplinas atuais
+// Disciplinas atuais
 $disciplinas = [];
-$sql_disciplinas = "
+$disciplinas_usuario_codigos = [];
+$stmt_disc = $conn->prepare("
     SELECT d.nome_disciplina, d.codigo_disciplina
     FROM disciplinas d
     INNER JOIN $tabela_vinculo vd ON d.codigo_disciplina = vd.disciplina_codigo
-    WHERE vd.$coluna_usuario = ?";
-$stmt_disc = $conn->prepare($sql_disciplinas);
+    WHERE vd.$coluna_usuario = ?
+");
 $stmt_disc->bind_param("i", $usuario_id);
 $stmt_disc->execute();
 $res_disc = $stmt_disc->get_result();
-$disciplinas_usuario_codigos = [];
-
 while ($row = $res_disc->fetch_assoc()) {
     $disciplinas[] = $row['nome_disciplina'];
     $disciplinas_usuario_codigos[] = $row['codigo_disciplina'];
 }
 
-// Todas as disciplinas disponíveis
+// Todas as disciplinas
 $todas_disciplinas = [];
 $res = $conn->query("SELECT codigo_disciplina, nome_disciplina FROM disciplinas");
 while ($row = $res->fetch_assoc()) {
     $todas_disciplinas[] = $row;
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Minha Conta</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <script>
-        function confirmarExclusao() {
-            if (confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
-                window.location.href = "minha_conta.php?excluir=sim";
-            }
-        }
-
-        function toggleFormulario() {
-            const form = document.getElementById('formEditarDisciplinas');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-    </script>
-</head>
-<body>
 
 <div class="container" style="margin-top: 70px;">
     <h2>Minha Conta</h2>
@@ -197,6 +140,7 @@ while ($row = $res->fetch_assoc()) {
         <p><strong>Email:</strong> <?= htmlspecialchars($dados_usuario['email']) ?></p>
         <p><strong>Curso:</strong> <?= htmlspecialchars($dados_usuario['curso']) ?></p>
         <p><strong>Tipo de Usuário:</strong> <?= ucfirst(htmlspecialchars($dados_usuario['tipo_usuario'])) ?></p>
+
         <?php if ($tipo_usuario === 'monitor'): ?>
             <h4 class="mt-4">Meu Ranking</h4>
             <?php if ($meu_ranking && $meu_ranking['total_avaliacoes'] > 0): ?>
@@ -206,7 +150,6 @@ while ($row = $res->fetch_assoc()) {
                 <p>Você ainda não recebeu avaliações.</p>
             <?php endif; ?>
         <?php endif; ?>
-        
 
         <p><strong>Disciplinas Vinculadas:</strong></p>
         <?php if (!empty($disciplinas)): ?>
@@ -221,7 +164,6 @@ while ($row = $res->fetch_assoc()) {
 
         <button class="btn btn-warning" onclick="toggleFormulario()">Editar Disciplinas</button>
 
-        <!-- Formulário de edição -->
         <div id="formEditarDisciplinas" style="display:none; margin-top:15px;">
             <form method="POST">
                 <?php foreach ($todas_disciplinas as $disc): ?>
@@ -255,5 +197,15 @@ while ($row = $res->fetch_assoc()) {
     <?php endif; ?>
 </div>
 
-</body>
-</html>
+<script>
+function confirmarExclusao() {
+    if (confirm("Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.")) {
+        window.location.href = "minha_conta.php?excluir=sim";
+    }
+}
+
+function toggleFormulario() {
+    const form = document.getElementById('formEditarDisciplinas');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+</script>

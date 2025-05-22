@@ -1,5 +1,7 @@
 <?php
 session_start();
+
+// Garante que apenas professores logados acessem
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'professor') {
     header("Location: login.php");
     exit;
@@ -8,55 +10,41 @@ if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'professor') {
 include "header.php";
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Painel do Professor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    .dashboard-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        color: #333;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 150px;
+    }
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
 
-    <style>
-        .dashboard-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            color: #333;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            height: 150px;
-        }
+    .dashboard-icon {
+        font-size: 2.5rem;
+        color: #28a745; /* Verde */
+        margin-bottom: 10px;
+    }
 
-        .dashboard-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
+    .dashboard-title {
+        font-weight: 600;
+        font-size: 1rem;
+        text-align: center;
+        margin: 0;
+    }
+</style>
 
-        .dashboard-icon {
-            font-size: 2.5rem;
-            color: #28a745; /* Verde */
-            margin-bottom: 10px;
-        }
-
-        .dashboard-title {
-            font-weight: 600;
-            font-size: 1rem;
-            text-align: center;
-            margin: 0;
-        }
-    </style>
-</head>
-
-<body>
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Painel do Professor</h1>
 
@@ -113,8 +101,3 @@ include "header.php";
 
     </div>
 </div>
-
-<!-- Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>

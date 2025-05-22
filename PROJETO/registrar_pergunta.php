@@ -1,85 +1,44 @@
 <?php
-
 session_start();
-if (!isset($_SESSION['id']) || !isset($_SESSION['tipo_usuario'])) {
+
+if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'aluno') {
     header("Location: login.php");
     exit;
 }
 
-
 include "header.php";
-// Incluir o arquivo de conexão com o banco de dados
 include_once 'conecta_db.php';
 
-// Conecta e seleciona o banco de dados learnhub_ep
-$oMysql = conecta_db();
-if ($oMysql->connect_error) {
-    echo "Erro de conexão: " . $oMysql->connect_error;
-    exit;
+$conn = conecta_db();
+if ($conn->connect_error) {
+    die("Erro de conexão: " . $conn->connect_error);
 }
-$oMysql->select_db("learnhub_ep");
 
-// Verificar se o usuário está logado
-if (!isset($_SESSION['id'])) {
-    header('Location: login.php');
-    exit;
-}
-// Verificar se o usuário logado é do tipo 'aluno'
 $usuario_id = $_SESSION['id'];
-$stmt = $oMysql->prepare("SELECT tipo_usuario FROM usuarios WHERE id = ?");
-$stmt->bind_param("i", $usuario_id);
-$stmt->execute();
-$stmt->bind_result($tipo_usuario);
-$stmt->fetch();
-$stmt->close();
+$codigo_aluno = $_SESSION['codigo_aluno'] ?? $usuario_id;
 
-if ($tipo_usuario !== 'aluno') {
-    echo "Acesso restrito! Apenas usuários do tipo aluno podem registrar perguntas.";
-    exit;
-}
-
-// Buscar as disciplinas cadastradas para preencher o select, mas apenas as vinculadas ao aluno
+// Buscar disciplinas do aluno
 $sql = "
     SELECT d.nome_disciplina 
     FROM disciplinas d
     INNER JOIN alunos_possuem_disciplinas apd ON d.codigo_disciplina = apd.disciplina_codigo
-    WHERE apd.aluno_codigo = ? 
+    WHERE apd.aluno_codigo = ?
     ORDER BY d.nome_disciplina ASC
 ";
-$stmt = $oMysql->prepare($sql);
-$stmt->bind_param("i", $usuario_id);  // Substitua $usuario_id pelo ID do aluno
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $usuario_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
-if (!$result) {
-    echo "Erro ao buscar disciplinas: " . $oMysql->error;
-    exit;
-}
-
 $disciplinas = $result->fetch_all(MYSQLI_ASSOC);
-$result->free();
 $stmt->close();
 
-// Processar o formulário de registro de pergunta
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($_POST['materia'])) {
+// Inserção da pergunta
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['pergunta'], $_POST['materia'])) {
     $pergunta = $_POST['pergunta'];
-    $materia  = $_POST['materia'];
-    $aluno_id = $_SESSION['codigo_aluno'];
+    $materia = $_POST['materia'];
 
-    // Verificar se o aluno existe na tabela 'aluno'
-    $stmt = $oMysql->prepare("SELECT id FROM aluno WHERE id = ?");
-    $stmt->bind_param("i", $aluno_id);
-    $stmt->execute();
-    $stmt->store_result();
-
-    if ($stmt->num_rows === 0) {
-        echo "Erro: Aluno não encontrado!";
-        exit;
-    }
-    $stmt->close();
-
-    // Buscar o código da disciplina pelo nome na tabela 'disciplinas'
-    $stmt = $oMysql->prepare("SELECT codigo_disciplina FROM disciplinas WHERE nome_disciplina = ?");
+    // Buscar código da disciplina
+    $stmt = $conn->prepare("SELECT codigo_disciplina FROM disciplinas WHERE nome_disciplina = ?");
     $stmt->bind_param("s", $materia);
     $stmt->execute();
     $stmt->bind_result($disciplina_codigo);
@@ -87,54 +46,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
     $stmt->close();
 
     if (empty($disciplina_codigo)) {
-        echo "Erro: Disciplina não encontrada!";
+        echo "Erro: Disciplina não encontrada.";
         exit;
     }
 
-    // Inserir a pergunta na tabela 'perguntas'
-    $stmt = $oMysql->prepare("INSERT INTO perguntas (enunciado, usuario_codigo, disciplina_codigo) VALUES (?, ?, ?)");
-    $stmt->bind_param("sii", $pergunta, $aluno_id, $disciplina_codigo);
-
+    // Inserir pergunta
+    $stmt = $conn->prepare("INSERT INTO perguntas (enunciado, usuario_codigo, disciplina_codigo) VALUES (?, ?, ?)");
+    $stmt->bind_param("sii", $pergunta, $codigo_aluno, $disciplina_codigo);
+    
     if ($stmt->execute()) {
-        echo  "<script>alert('Pergunta registrada com sucesso!'); window.location.href='registrar_pergunta.php';</script>";
-    
-        // Obter o ID da pergunta recém-inserida
         $pergunta_id = $stmt->insert_id;
-    
-        // Inserir na tabela aluno_possui_pergunta
-        $stmt_vinculo_aluno = $oMysql->prepare("INSERT INTO aluno_possui_pergunta (aluno_codigo, pergunta_codigo) VALUES (?, ?)");
-        $stmt_vinculo_aluno->bind_param("ii", $aluno_id, $pergunta_id);
-    
-        if (!$stmt_vinculo_aluno->execute()) {
-            echo "<br>Erro ao vincular pergunta ao aluno: " . $stmt_vinculo_aluno->error;
-        }
-        $stmt_vinculo_aluno->close();
-    
-        // Inserir na tabela pergunta_possui_disciplina
-        $stmt_vinculo_disc = $oMysql->prepare("INSERT INTO pergunta_possui_disciplina (pergunta_codigo, disciplina_codigo) VALUES (?, ?)");
-        $stmt_vinculo_disc->bind_param("ii", $pergunta_id, $disciplina_codigo);
-    
-        if (!$stmt_vinculo_disc->execute()) {
-            echo "<br>Erro ao vincular pergunta à disciplina: " . $stmt_vinculo_disc->error;
-        }
-        $stmt_vinculo_disc->close();
-    
+
+        // Vincular pergunta ao aluno
+        $stmt_v1 = $conn->prepare("INSERT INTO aluno_possui_pergunta (aluno_codigo, pergunta_codigo) VALUES (?, ?)");
+        $stmt_v1->bind_param("ii", $codigo_aluno, $pergunta_id);
+        $stmt_v1->execute();
+        $stmt_v1->close();
+
+        // Vincular pergunta à disciplina
+        $stmt_v2 = $conn->prepare("INSERT INTO pergunta_possui_disciplina (pergunta_codigo, disciplina_codigo) VALUES (?, ?)");
+        $stmt_v2->bind_param("ii", $pergunta_id, $disciplina_codigo);
+        $stmt_v2->execute();
+        $stmt_v2->close();
+
+        echo "<script>alert('Pergunta registrada com sucesso!'); window.location.href='registrar_pergunta.php';</script>";
     } else {
         echo "Erro ao registrar pergunta: " . $stmt->error;
     }
-
     $stmt->close();
-    $oMysql->close();
 }
+
+$conn->close();
 ?>
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Registrar Pergunta</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
 
 <div class="d-flex justify-content-center align-items-center vh-100">
     <div class="container" style="max-width: 600px;">
@@ -145,12 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
                     <label for="materia" class="form-label mb-3">Matéria</label>
                     <select class="form-select mb-3" id="materia" name="materia" required>
                         <option value="" disabled selected>Selecione uma matéria</option>
-                        <?php
-                        foreach ($disciplinas as $disciplina) {
-                            echo '<option value="' . htmlspecialchars($disciplina['nome_disciplina']) . '">'
-                                 . htmlspecialchars($disciplina['nome_disciplina']) . '</option>';
-                        }
-                        ?>
+                        <?php foreach ($disciplinas as $disc): ?>
+                            <option value="<?= htmlspecialchars($disc['nome_disciplina']) ?>">
+                                <?= htmlspecialchars($disc['nome_disciplina']) ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
@@ -167,6 +109,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pergunta']) && isset($
         </div>
     </div>
 </div>
-
-</body>
-</html>

@@ -1,25 +1,21 @@
 <?php
-include_once 'conecta_db.php'; 
-include "header.php";
+session_start();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Verifica se o usuário está logado e é aluno
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'aluno') {
     header("Location: login.php");
     exit();
 }
 
-$oMysql = conecta_db();
-if ($oMysql->connect_error) {
-    die("Erro de conexão: " . $oMysql->connect_error);
+include_once 'conecta_db.php';
+include "header.php";
+
+$conn = conecta_db();
+if ($conn->connect_error) {
+    die("Erro de conexão: " . $conn->connect_error);
 }
 
 $idAluno = $_SESSION['id'];
 
-// Consulta perguntas com avaliação feita pelo aluno logado
 $query = "
     SELECT 
         p.codigo_pergunta,
@@ -38,29 +34,21 @@ $query = "
     ORDER BY p.data_criacao DESC
 ";
 
-$stmt = $oMysql->prepare($query);
+$stmt = $conn->prepare($query);
 if (!$stmt) {
-    die("Erro ao preparar a consulta: " . $oMysql->error);
+    die("Erro ao preparar a consulta: " . $conn->error);
 }
 $stmt->bind_param("ii", $idAluno, $idAluno);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Perguntas Avaliadas</title>
-    <meta charset="utf-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
 <div class="container mt-4">
     <h2>Perguntas Avaliadas</h2>
 
     <?php if ($result->num_rows > 0): ?>
         <table class="table table-bordered mt-3">
-            <thead>
+            <thead class="table-light">
                 <tr>
                     <th>Enunciado</th>
                     <th>Disciplina</th>
@@ -74,11 +62,8 @@ $result = $stmt->get_result();
                     <tr>
                         <td><?= htmlspecialchars($row['enunciado']) ?></td>
                         <td><?= htmlspecialchars($row['nome_disciplina']) ?></td>
-                        <td><?= htmlspecialchars($row['resposta']) ?></td>
-                        <td>
-                            <?= htmlspecialchars($row['nome_respondente']) ?>
-                            (<?= htmlspecialchars($row['respondente_tipo']) ?>)
-                        </td>
+                        <td><?= nl2br(htmlspecialchars($row['resposta'])) ?></td>
+                        <td><?= htmlspecialchars($row['nome_respondente']) ?> (<?= htmlspecialchars($row['respondente_tipo']) ?>)</td>
                         <td>
                             <?= str_repeat('⭐', (int)$row['nota']) ?>
                             <?= $row['nota'] ?> estrela<?= $row['nota'] != 1 ? 's' : '' ?>
@@ -91,10 +76,8 @@ $result = $stmt->get_result();
         <div class="alert alert-info">Você ainda não avaliou nenhuma resposta.</div>
     <?php endif; ?>
 </div>
-</body>
-</html>
 
 <?php
 $stmt->close();
-$oMysql->close();
+$conn->close();
 ?>

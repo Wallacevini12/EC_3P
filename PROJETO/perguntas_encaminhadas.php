@@ -26,22 +26,10 @@ $query = "
 ";
 
 $result = $oMysql->query($query);
-
 if (!$result) {
     die("Erro ao buscar perguntas encaminhadas: " . $oMysql->error);
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Perguntas Encaminhadas</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
 
 <div class="container mt-3">
     <h2>Perguntas Encaminhadas para Professor</h2>
@@ -107,8 +95,5 @@ if (!$result) {
         <p class="alert alert-info">Nenhuma pergunta encaminhada no momento.</p>
     <?php endif; ?>
 </div>
-
-</body>
-</html>
 
 <?php $oMysql->close(); ?>

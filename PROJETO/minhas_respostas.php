@@ -1,16 +1,15 @@
 <?php
-include_once 'conecta_db.php'; 
-include "header.php";
+session_start();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include_once 'conecta_db.php';
 
 // Verifica se o usuário está logado e é monitor
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'monitor') {
     header("Location: login.php");
     exit();
 }
+
+include "header.php";
 
 $oMysql = conecta_db();
 if ($oMysql->connect_error) {
@@ -19,7 +18,6 @@ if ($oMysql->connect_error) {
 
 $id_monitor = $_SESSION['id'];
 
-// Consulta respostas do monitor e suas avaliações (se houver)
 $query = "
     SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
            u.nome AS nome_aluno, 
@@ -42,15 +40,6 @@ $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Minhas Respostas</title>
-    <meta charset="utf-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-</head>
-<body>
 <div class="container mt-4">
     <h2>Minhas Respostas</h2>
 
@@ -59,10 +48,10 @@ $result = $stmt->get_result();
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <div class="d-flex flex-wrap gap-2">
-                    <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
-                    <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
-                    <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?></span>
-                    <span class="tag status-respondida"><strong>Status:</strong> Respondida</span>
+                        <span class="tag"><strong>Data:</strong> <?= date('d/m/Y', strtotime($row['data_criacao'])) ?></span>
+                        <span class="tag"><strong>Disciplina:</strong> <?= htmlspecialchars($row['nome_disciplina']) ?></span>
+                        <span class="tag"><strong>Aluno:</strong> <?= htmlspecialchars($row['nome_aluno']) ?></span>
+                        <span class="tag status-respondida"><strong>Status:</strong> Respondida</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -87,8 +76,6 @@ $result = $stmt->get_result();
         <div class="alert alert-info">Você ainda não respondeu nenhuma pergunta.</div>
     <?php endif; ?>
 </div>
-</body>
-</html>
 
 <?php
 $stmt->close();

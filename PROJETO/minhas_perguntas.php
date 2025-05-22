@@ -1,10 +1,8 @@
-<?php 
-include_once 'conecta_db.php'; 
-include "header.php";
+<?php
+session_start();
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+include_once 'conecta_db.php';
+include "header.php";
 
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'aluno') {
     header("Location: login.php");
@@ -40,17 +38,6 @@ $stmt->bind_param("ii", $idAluno, $idAluno);
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Minhas Perguntas</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
 
 <div class="container mt-4">
     <h3 class="mb-4">Minhas Perguntas</h3>
@@ -101,9 +88,6 @@ $result = $stmt->get_result();
         <div class="alert alert-info">Você ainda não fez nenhuma pergunta.</div>
     <?php endif; ?>
 </div>
-
-</body>
-</html>
 
 <?php
 $stmt->close();

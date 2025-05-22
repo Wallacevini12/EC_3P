@@ -2,13 +2,14 @@
 session_start();
 
 include_once 'conecta_db.php';
-include "header.php";
 
 // Verifica se o usuário está logado e é professor
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'professor') {
     header("Location: login.php");
     exit();
 }
+
+include "header.php";
 
 $professor_id = $_SESSION['id'];
 
@@ -17,10 +18,6 @@ if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Exibe a ID do professor para verificação
-// echo "ID do professor: " . $professor_id;
-
-// Consulta: monitores que compartilham disciplinas com este professor
 $sql = "SELECT DISTINCT u.nome, u.email, u.curso, d.nome_disciplina
         FROM usuarios u
         INNER JOIN monitor m ON u.id = m.id
@@ -40,17 +37,7 @@ $stmt->execute();
 $result = $stmt->get_result();
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Meus Monitores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-
 <div class="container mt-5">
-    <br>
     <h2 class="mb-4">Monitores Vinculados às Suas Disciplinas</h2>
 
     <?php if ($result && $result->num_rows > 0): ?>
@@ -66,10 +53,10 @@ $result = $stmt->get_result();
             <tbody>
                 <?php while($monitor = $result->fetch_assoc()): ?>
                     <tr>
-                        <td><?php echo htmlspecialchars($monitor['nome']); ?></td>
-                        <td><?php echo htmlspecialchars($monitor['email']); ?></td>
-                        <td><?php echo htmlspecialchars($monitor['curso']); ?></td>
-                        <td><?php echo htmlspecialchars($monitor['nome_disciplina']); ?></td>
+                        <td><?= htmlspecialchars($monitor['nome']) ?></td>
+                        <td><?= htmlspecialchars($monitor['email']) ?></td>
+                        <td><?= htmlspecialchars($monitor['curso']) ?></td>
+                        <td><?= htmlspecialchars($monitor['nome_disciplina']) ?></td>
                     </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -80,9 +67,6 @@ $result = $stmt->get_result();
         </div>
     <?php endif; ?>
 </div>
-
-</body>
-</html>
 
 <?php
 $stmt->close();

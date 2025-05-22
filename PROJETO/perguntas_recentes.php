@@ -1,6 +1,7 @@
 <?php
-// Incluir arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; 
+session_start();
+
+include_once 'conecta_db.php';
 include "header.php";
 
 // Conecta ao banco
@@ -11,31 +12,20 @@ if ($oMysql->connect_error) {
 
 $query = "
     SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
-    u.nome AS nome_aluno, 
-    d.nome_disciplina, 
-    r.resposta,
-    r.codigo_resposta
-FROM perguntas p
-JOIN usuarios u ON p.usuario_codigo = u.id
-JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
-LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
-WHERE DATE(p.data_criacao) = CURDATE()
-ORDER BY p.data_criacao DESC
+           u.nome AS nome_aluno, 
+           d.nome_disciplina, 
+           r.resposta,
+           r.codigo_resposta
+    FROM perguntas p
+    JOIN usuarios u ON p.usuario_codigo = u.id
+    JOIN disciplinas d ON p.disciplina_codigo = d.codigo_disciplina
+    LEFT JOIN respostas r ON p.codigo_pergunta = r.codigo_pergunta
+    WHERE DATE(p.data_criacao) = CURDATE()
+    ORDER BY p.data_criacao DESC
 ";
 
 $result = $oMysql->query($query);
 ?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Perguntas Recentes</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
 
 <div class="container mt-4">
     <h3 class="mb-4">Perguntas Recentes</h3>
@@ -67,8 +57,5 @@ $result = $oMysql->query($query);
         <div class="alert alert-info">Nenhuma pergunta encontrada.</div>
     <?php endif; ?>
 </div>
-
-</body>
-</html>
 
 <?php $oMysql->close(); ?>

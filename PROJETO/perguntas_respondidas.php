@@ -1,6 +1,7 @@
 <?php
-// Incluir arquivo de conexão com o banco de dados
-include_once 'conecta_db.php'; 
+session_start();
+
+include_once 'conecta_db.php';
 include "header.php";
 
 // Conecta ao banco
@@ -9,7 +10,7 @@ if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Consulta apenas perguntas que possuem respostas
+// Consulta perguntas com respostas
 $query = "
     SELECT p.codigo_pergunta, p.enunciado, p.data_criacao, p.status,
            u.nome AS nome_aluno, 
@@ -25,17 +26,6 @@ $query = "
 
 $result = $oMysql->query($query);
 ?>
-
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <title>Perguntas Respondidas</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
 
 <div class="container mt-4">
     <h3 class="mb-4">Perguntas Respondidas</h3>
@@ -63,8 +53,5 @@ $result = $oMysql->query($query);
         <div class="alert alert-info">Nenhuma pergunta respondida encontrada.</div>
     <?php endif; ?>
 </div>
-
-</body>
-</html>
 
 <?php $oMysql->close(); ?>

@@ -9,10 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
   <meta charset="utf-8">
   <title>LearnHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap 5 CSS -->
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <style>
@@ -21,55 +19,48 @@ if (session_status() === PHP_SESSION_NONE) {
     .navbar .navbar-text {
       color: greenyellow ;
       font-size: 0.8rem;
-  }
+    }
 
     .navbar .nav-link:hover,
     .navbar .navbar-brand:hover {
-      color: #adff2f; /* Tom levemente diferente ao passar o mouse */
+      color: #adff2f;
       transform: scale(1.1);
       transition: transform 0.3s ease;
       text-decoration: underline;
-  }
-    .navbar-separator {
-    border-left: 2px solid greenyellow;
-    height: 40px;
-    margin-left: 20px;
-    margin-right: 10px;
-  }
-  
-  body {
-  padding-top: 100px
-  }
+    }
 
-  
-  
-</style>
-  
+    .navbar-separator {
+      border-left: 2px solid greenyellow;
+      height: 40px;
+      margin-left: 20px;
+      margin-right: 10px;
+    }
+
+    body {
+      padding-top: 100px;
+    }
+  </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid">
     <!-- Marca -->
-    <a class="navbar-brand d-flex align-items-center" href="
-    <?php 
+    <a class="navbar-brand d-flex align-items-center" href="<?php 
       if (isset($_SESSION['tipo_usuario'])) {
-        if ($_SESSION['tipo_usuario'] === 'aluno') {
-          echo 'home_aluno.php';
-        } elseif ($_SESSION['tipo_usuario'] === 'professor') {
-          echo 'home_professor.php';
-        } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
-          echo 'home_monitor.php';
-        } else {
-          echo 'index.php';
+        switch ($_SESSION['tipo_usuario']) {
+          case 'aluno': echo 'home_aluno.php'; break;
+          case 'professor': echo 'home_professor.php'; break;
+          case 'monitor': echo 'home_monitor.php'; break;
+          default: echo 'index.php';
         }
       } else {
         echo 'index.php';
       }
     ?>">
-  <img src="images/logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top me-2">
-  <span>LearnHub</span>
-</a>
+      <img src="images/logo.png" alt="Logo" width="60" height="60" class="d-inline-block align-text-top me-2">
+      <span>LearnHub</span>
+    </a>
 
     <div class="navbar-separator"></div>
 
@@ -77,49 +68,28 @@ if (session_status() === PHP_SESSION_NONE) {
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Menu -->
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
-          <a class="nav-link" href="
-            <?php 
-              if (isset($_SESSION['tipo_usuario'])) {
-                if ($_SESSION['tipo_usuario'] === 'aluno') {
-                  echo 'home_aluno.php';
-                } elseif ($_SESSION['tipo_usuario'] === 'professor') {
-                  echo 'home_professor.php';
-                } elseif ($_SESSION['tipo_usuario'] === 'monitor') {
-                  echo 'home_monitor.php';
-                } else {
-                  echo 'index.php';
-                }
-              } else {
-                echo 'index.php';
-              }
-            ?>
-          "><i class="bi bi-house-door-fill"></i> Home</a>
+          <a class="nav-link" href="index.php"><i class="bi bi-house-door-fill"></i> Home</a>
         </li>
 
-
         <?php if (isset($_SESSION['id'])): ?>
-
-          <!-- Mostrar "Fazer Pergunta" apenas para aluno -->
           <?php if ($_SESSION['tipo_usuario'] === 'aluno'): ?>
-            <li class="nav-item">
-                <a class="nav-link" href="registrar_pergunta.php"><i class="bi bi-question-circle-fill"></i> Fazer Pergunta</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="minhas_perguntas.php"><i class="bi bi-chat-left-text-fill"></i> Minhas Perguntas</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="perguntas_recentes.php"><i class="bi bi-clock-history"></i> Perguntas Recentes</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="respostas_avaliadas.php"><i class="bi bi-star-fill"></i> Respostas Avaliadas</a>
+            <!-- Dropdown agrupado para Perguntas -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="perguntasDropdown" role="button" data-bs-toggle="dropdown">
+                <i class="bi bi-question-circle-fill"></i> Perguntas
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="perguntasDropdown">
+                <li><a class="dropdown-item" href="registrar_pergunta.php">Fazer Pergunta</a></li>
+                <li><a class="dropdown-item" href="minhas_perguntas.php">Minhas Perguntas</a></li>
+                <li><a class="dropdown-item" href="perguntas_recentes.php">Perguntas Recentes</a></li>
+                <li><a class="dropdown-item" href="respostas_avaliadas.php">Respostas Avaliadas</a></li>
+              </ul>
             </li>
           <?php endif; ?>
 
-          <!-- Header de professor-->
           <?php if ($_SESSION['tipo_usuario'] === 'professor'): ?>
             <li class="nav-item">
               <a class="nav-link" href="lista_monitor.php"><i class="bi bi-people-fill"></i> Lista de Monitores</a>
@@ -132,8 +102,6 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
-
-          <!-- Mostrar "Perguntas" apenas para monitor -->
           <?php if ($_SESSION['tipo_usuario'] === 'monitor'): ?>
             <li class="nav-item">
               <a class="nav-link" href="perguntas_monitor.php"><i class="bi bi-question-square-fill"></i> Perguntas para mim</a>
@@ -143,9 +111,7 @@ if (session_status() === PHP_SESSION_NONE) {
             </li>
           <?php endif; ?>
 
-
-
-            <!-- Mostrar "Perguntas respondidas" para todos os usuários desde que logados -->
+          <!-- Itens comuns a todos os usuários -->
           <li class="nav-item">
             <a class="nav-link" href="perguntas_respondidas.php"><i class="bi bi-check2-square"></i> Perguntas Respondidas</a>
           </li>
@@ -153,7 +119,6 @@ if (session_status() === PHP_SESSION_NONE) {
           <li class="nav-item">
             <a class="nav-link" href="ranking_monitores.php"><i class="bi bi-trophy-fill"></i> Ranking de Monitores</a>
           </li>
-
         <?php else: ?>
           <li class="nav-item">
             <a class="nav-link" href="login.php"><i class="bi bi-box-arrow-in-right"></i> Login</a>
@@ -161,29 +126,19 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php endif; ?>
       </ul>
 
-
-
-      <!-- DADOS DO USUÁRIO LOGADO -->
+      <!-- Usuário logado com dropdown -->
       <?php if (isset($_SESSION['id']) && isset($_SESSION['nome']) && isset($_SESSION['tipo_usuario'])): ?>
-        <li class="nav-item">
-          <span class="navbar-text text-white me-3">
-            <i class="bi bi-person-fill"></i> <?php echo htmlspecialchars($_SESSION['nome']); ?> (<?php echo ucfirst($_SESSION['tipo_usuario']); ?>)
-          </span>
-        </li>
-      <?php endif; ?>
-
-      <!-- Botão de logout na direita -->
-      <?php if (isset($_SESSION['id'])): ?>
         <ul class="navbar-nav ms-auto">
-
-        
-
-          <li class="nav-item">
-            <a class="nav-link" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a>
-          </li>
-
-          <li class="nav-item">
-            <a class="nav-link" href="logout.php"><i class="bi bi-box-arrow-right"></i> Sair</a>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="usuarioDropdown" role="button" data-bs-toggle="dropdown">
+              <i class="bi bi-person-fill"></i> <?= htmlspecialchars($_SESSION['nome']) ?>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark" aria-labelledby="usuarioDropdown">
+              <li><span class="dropdown-item-text text-muted">(<?= ucfirst($_SESSION['tipo_usuario']) ?>)</span></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="minha_conta.php"><i class="bi bi-person-circle"></i> Minha Conta</a></li>
+              <li><a class="dropdown-item" href="logout.php"><i class="bi bi-box-arrow-right"></i> Sair</a></li>
+            </ul>
           </li>
         </ul>
       <?php endif; ?>
@@ -191,7 +146,7 @@ if (session_status() === PHP_SESSION_NONE) {
   </div>
 </nav>
 
-<!-- Bootstrap 5 JS -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

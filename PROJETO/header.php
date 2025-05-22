@@ -139,7 +139,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <i class="bi bi-people-fill me-1"></i> Monitores
               </a>
               <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMonitores">
-                <li><a class="dropdown-item" href="lista_monitor.php"><i class="bi bi-list-ul me-1"></i> Lista de Monitores</a></li>
+                <li><a class="dropdown-item" href="lista_monitor.php"><i class="bi bi-list-ul me-1"></i> Lista de Monitores das minhas disciplinas</a></li>
                 <li><a class="dropdown-item" href="cadastro_monitor.php"><i class="bi bi-person-plus-fill me-1"></i> Cadastrar Monitor</a></li>
               </ul>
            </li>
@@ -151,7 +151,7 @@ if (session_status() === PHP_SESSION_NONE) {
               <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownPerguntas">
                 <li>
                   <a class="dropdown-item" href="perguntas_encaminhadas.php">
-                    <i class="bi bi-send-check-fill me-1"></i> Encaminhadas para mim
+                    <i class="bi bi-send-fill me-1"></i> Encaminhadas para mim
                   </a>
                 </li>
                 <li>
@@ -194,7 +194,7 @@ if (session_status() === PHP_SESSION_NONE) {
               </li>
               <li>
                 <a class="dropdown-item" href="lista_professores.php">
-                  <i class="bi bi-person-badge-fill me-1"></i> Lista de Professores
+                  <i class="bi bi-mortarboard-fill me-1"></i> Lista de Professores
                 </a>
               </li>
             </ul>

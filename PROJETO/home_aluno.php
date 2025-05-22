@@ -91,6 +91,13 @@ include "header.php";
         </div>
 
         <div class="col-6 col-md-4">
+            <a href="todas_perguntas.php" class="dashboard-card">
+                <i class="bi bi-list-ul dashboard-icon"></i>
+                <p class="dashboard-title">Todas as Perguntas</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
             <a href="perguntas_respondidas.php" class="dashboard-card">
                 <i class="bi bi-check2-square dashboard-icon"></i>
                 <p class="dashboard-title">Perguntas Respondidas</p>
@@ -98,10 +105,28 @@ include "header.php";
         </div>
 
 
+
         <div class="col-6 col-md-4">
-            <a href="todas_perguntas.php" class="dashboard-card">
-                <i class="bi bi-list-ul dashboard-icon"></i>
-                <p class="dashboard-title">Todas as Perguntas</p>
+            <a href="lista_todos_monitores.php" class="dashboard-card">
+                <i class="bi bi-people-fill dashboard-icon"></i>
+                <p class="dashboard-title">Lista de Monitores</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <a href="lista_professores.php" class="dashboard-card">
+                <i class="bi bi-mortarboard-fill dashboard-icon"></i>
+                <p class="dashboard-title">Lista de Professores</p>
+            </a>
+        </div>
+
+
+
+
+        <div class="col-6 col-md-4">
+            <a href="ranking_monitores.php" class="dashboard-card">
+                <i class="bi bi-trophy-fill dashboard-icon"></i>
+                <p class="dashboard-title">Ranking de Monitores</p>
             </a>
         </div>
 

@@ -50,8 +50,6 @@ $result_ranking = $conn->query($sql_ranking);
         <p class="alert alert-info mt-3">Nenhum monitor avaliado ainda.</p>
     <?php endif; ?>
 
-    <br>
-    <a href="index.php" class="btn btn-secondary">Voltar</a>
 </div>
 
 <?php $conn->close(); ?>

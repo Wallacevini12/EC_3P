@@ -45,7 +45,7 @@ include "header.php";
     }
 </style>
 
-<div class="container mt-5">
+<div class="container my-5">
     <h1 class="mb-4 text-center">Bem-vindo, Monitor!</h1>
 
     <div class="row g-3 justify-content-center">
@@ -58,9 +58,38 @@ include "header.php";
         </div>
 
         <div class="col-6 col-md-4">
+            <a href="todas_perguntas.php" class="dashboard-card">
+                <i class="bi bi-list-ul dashboard-icon"></i>
+                <p class="dashboard-title">Todas as Perguntas</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <a href="minhas_respostas.php" class="dashboard-card">
+                <i class="bi bi-chat-left-text dashboard-icon"></i>
+                <p class="dashboard-title">Minhas Respostas</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
             <a href="perguntas_respondidas.php" class="dashboard-card">
                 <i class="bi bi-check2-square dashboard-icon"></i>
                 <p class="dashboard-title">Perguntas Respondidas</p>
+            </a>
+        </div>
+
+        <div class="col-6 col-md-4">
+            <a href="lista_todos_monitores.php" class="dashboard-card">
+                <i class="bi bi-people-fill dashboard-icon"></i>
+                <p class="dashboard-title">Lista de Monitores</p>
+            </a>
+        </div>
+
+
+        <div class="col-6 col-md-4">
+            <a href="lista_professores.php" class="dashboard-card">
+                <i class="bi bi-mortarboard-fill dashboard-icon"></i>
+                <p class="dashboard-title">Lista de Professores</p>
             </a>
         </div>
 
@@ -70,6 +99,7 @@ include "header.php";
                 <p class="dashboard-title">Ranking de Monitores</p>
             </a>
         </div>
+
 
         <div class="col-6 col-md-4">
             <a href="minha_conta.php" class="dashboard-card">

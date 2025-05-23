@@ -35,6 +35,7 @@ $query = "
     LEFT JOIN usuarios u ON r.respondente_id = u.id
     JOIN usuarios ua ON p.usuario_codigo = ua.id
     LEFT JOIN avaliacoes a ON r.codigo_resposta = a.resposta_id AND a.aluno_id = ?
+    WHERE DATE(p.data_criacao) = CURDATE()
     ORDER BY p.data_criacao DESC
 ";
 

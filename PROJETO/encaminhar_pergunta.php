@@ -6,28 +6,32 @@ if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'monitor') {
     exit;
 }
 
-include_once 'conecta_db.php';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['codigo_pergunta'])) {
-    $codigo_pergunta = intval($_POST['codigo_pergunta']);
-
-    $oMysql = conecta_db();
-    if ($oMysql->connect_error) {
-        die("Erro de conexão: " . $oMysql->connect_error);
-    }
-
-    // Atualizar a pergunta para encaminhada
-    $sql = "UPDATE perguntas SET encaminhada = 1 WHERE codigo_pergunta = $codigo_pergunta";
-
-    if ($oMysql->query($sql)) {
-        // Redirecionar de volta para a lista de perguntas do monitor
-        header("Location: perguntas_monitor.php?msg=Pergunta encaminhada com sucesso");
-    } else {
-        echo "Erro ao encaminhar a pergunta: " . $oMysql->error;
-    }
-
-    $oMysql->close();
-} else {
-    header("Location: perguntas_monitor.php");
+if (!isset($_POST['codigo_pergunta'])) {
+    header("Location: perguntas_monitor.php?msg=" . urlencode("Erro: pergunta não especificada"));
     exit;
 }
+
+include_once 'conecta_db.php';
+$oMysql = conecta_db();
+if ($oMysql->connect_error) {
+    die("Erro de conexão: " . $oMysql->connect_error);
+}
+
+$codigo_pergunta = intval($_POST['codigo_pergunta']);
+
+// Atualizar a pergunta para marcar como encaminhada
+$sql_update = "UPDATE perguntas SET encaminhada = 1 WHERE codigo_pergunta = $codigo_pergunta";
+
+if ($oMysql->query($sql_update)) {
+    $msg = "Pergunta encaminhada com sucesso!";
+} else {
+    $msg = "Erro ao encaminhar pergunta: " . $oMysql->error;
+}
+
+$oMysql->close();
+
+// Redirecionar para perguntas_monitor com a mensagem
+header("Location: perguntas_monitor.php?msg=" . urlencode($msg));
+exit;
+?>
+

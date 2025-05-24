@@ -92,7 +92,8 @@ $conn->close();
             <h2 class="text-center mb-4">Registrar Pergunta</h2>
             <form method="POST" action="registrar_pergunta.php" class="d-flex flex-column gap-4">
                 <div>
-                    <label for="materia" class="form-label mb-3">Matéria</label>
+                    
+                    <label for="materia" class="form-label mb-3">Matéria</label><label style="color: red;">*</label>
                     <select class="form-select mb-3" id="materia" name="materia" required>
                         <option value="" disabled selected>Selecione uma matéria</option>
                         <?php foreach ($disciplinas as $disc): ?>
@@ -103,7 +104,7 @@ $conn->close();
                     </select>
                 </div>
                 <div>
-                    <label for="pergunta" class="form-label">Sua Pergunta</label>
+                    <label for="pergunta" class="form-label">Sua Pergunta</label><label style="color: red;">*</label>
                     <textarea class="form-control" id="pergunta" name="pergunta" rows="4" placeholder="Digite sua dúvida aqui..." required></textarea>
                 </div>
                 <div class="d-grid">

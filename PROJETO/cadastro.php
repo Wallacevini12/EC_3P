@@ -163,31 +163,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
   <div class="card shadow p-4" style="min-width: 350px; max-width: 500px; width: 100%;">
     <h2 class="mb-3">Cadastro de Usuário</h2>
-    <p>Preencha os campos abaixo (e-mail institucional para definir o tipo de usuário):</p>    
+    <p>Preencha os campos abaixo:</p>    
+
+    <label style="color: red;">*  = Campo obrigatório</label>
+    <br>
 
     <?php if ($erro): ?>
       <div class="msg-erro"><?= htmlspecialchars($erro) ?></div>
     <?php endif; ?>
 
     <form id="formCadastro" method="POST" action="cadastro.php?tipo=<?= htmlspecialchars($tipo_usuario) ?>">
+
+      <label for="nome" class="form-label">Nome <span style="color: red;">*</span></label>
       <input
         type="text"
         name="nome"
+        id="nome"
         class="form-control mb-2"
         placeholder="Nome"
         required
         value="<?= isset($nome) ? htmlspecialchars($nome) : '' ?>"
       >
 
+      <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
       <input
         type="email"
         name="email"
+        id="email"
         class="form-control mb-2"
-        placeholder="Email (ex: maria@aluno.edu)"
+        placeholder="Email (ex: maria@email.com)"
         required
         value="<?= isset($email) ? htmlspecialchars($email) : '' ?>"
       >
 
+      <label for="senha" class="form-label">Senha <span style="color: red;">*</span></label>
       <input
         type="password"
         name="senha"
@@ -197,7 +206,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         required
       >
 
-      <select name="curso" class="form-select mb-3" required>
+      <label for="curso" class="form-label">Curso <span style="color: red;">*</span></label>
+      <select name="curso" id="curso" class="form-select mb-3" required>
         <option value="" disabled <?= !isset($curso) ? 'selected' : '' ?>>Selecione seu curso</option>
         <option value="Engenharia de Software" <?= (isset($curso) && $curso === 'Engenharia de Software') ? 'selected' : '' ?>>Engenharia de Software</option>
         <option value="Sistemas de Informação" <?= (isset($curso) && $curso === 'Sistemas de Informação') ? 'selected' : '' ?>>Sistemas de Informação</option>
@@ -239,6 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>
+
 
   </div>
 </div>

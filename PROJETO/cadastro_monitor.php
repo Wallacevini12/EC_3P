@@ -161,6 +161,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <form method="POST" action="">
+
+      <label style="color: red;">*  = Campo obrigatório</label>
+      <br>
+      <br>
+
+      <label for="nome" class="form-label">Nome <span style="color: red;">*</span></label>
       <input
         type="text"
         name="nome"
@@ -170,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>"
       />
 
+      <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
       <input
         type="email"
         name="email"
@@ -179,6 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
       />
 
+      <label for="senha" class="form-label">Senha <span style="color: red;">*</span></label>
       <input
         type="password"
         name="senha"
@@ -187,6 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         required
       />
 
+      <label for="curso" class="form-label">Curso <span style="color: red;">*</span></label>
       <select name="curso" class="form-select mb-2" required>
         <option value="" disabled <?php echo !isset($_POST['curso']) ? 'selected' : ''; ?>>Selecione seu curso</option>
         <?php 
@@ -205,6 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
       </select>
 
+      <label for="disciplinas" class="form-label">Disciplinas</label><br>
       <select name="disciplina" class="form-select mb-3" required>
         <option value="" disabled <?php echo !isset($_POST['disciplina']) ? 'selected' : ''; ?>>Selecione sua disciplina</option>
         <?php foreach ($disciplinas as $disciplina): ?>
@@ -214,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </option>
         <?php endforeach; ?>
       </select>
+
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>

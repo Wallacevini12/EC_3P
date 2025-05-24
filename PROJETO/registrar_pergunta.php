@@ -1,13 +1,20 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'aluno') {
-    header("Location: login.php");
-    exit;
-}
-
 include "header.php";
 include_once 'conecta_db.php';
+
+// Verifica se o usuário está logado como professor
+if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'aluno') {
+    echo '<div class="container" style="margin-top: 70px;">
+            <div class="alert alert-danger" role="alert">
+                Você não está logado como aluno.
+            </div>
+          </div>';
+    exit();
+}
+
+
 
 $conn = conecta_db();
 if ($conn->connect_error) {

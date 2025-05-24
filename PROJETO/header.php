@@ -212,27 +212,34 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php endif; ?>
       </ul>
 
-      <form class="d-flex me-3 search-form" action="pesquisar_pergunta.php" method="get">
-        <input class="form-control me-2" type="search" name="buscar" placeholder="Pesquisar pergunta..." aria-label="Pesquisar">
-        <button type="submit"><i class="bi bi-search"></i></button>
-      </form>
-
-      <script>
-        function getQueryParam(param) {
-          const urlParams = new URLSearchParams(window.location.search);
-          return urlParams.get(param);
-        }
-
-        if (getQueryParam('focarBusca') === '1') {
-          const searchInput = document.querySelector('form.search-form input[name="buscar"]');
-          if (searchInput) {
-            searchInput.focus();
-          }
-        }
-      </script>
+    
 
 
       <?php if (isset($_SESSION['id']) && isset($_SESSION['nome']) && isset($_SESSION['tipo_usuario'])): ?>
+
+        <form class="d-flex me-3 search-form" action="pesquisar_pergunta.php" method="get">
+          <input class="form-control me-2" type="search" name="buscar" placeholder="Pesquisar pergunta..." aria-label="Pesquisar">
+          <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
+
+        <script>
+          function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+          }
+
+          if (getQueryParam('focarBusca') === '1') {
+            const searchInput = document.querySelector('form.search-form input[name="buscar"]');
+            if (searchInput) {
+              searchInput.focus();
+            }
+          }
+        </script>
+
+
+
+
+
         <ul class="navbar-nav ms-auto">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="usuarioDropdown" role="button" data-bs-toggle="dropdown">

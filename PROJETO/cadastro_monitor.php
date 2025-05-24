@@ -4,11 +4,14 @@ include_once 'conecta_db.php'; // Inclui o arquivo de conexão com o banco
 include_once 'header.php';     // Inclui o cabeçalho padrão
 
 // Verifica se o usuário está logado
-if (!isset($_SESSION['id'])) {
-    header('Location: login.php');
-    exit;
+if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'professor') {
+    echo '<div class="container" style="margin-top: 70px;">
+            <div class="alert alert-danger" role="alert">
+                Você não testá logado como professor.
+            </div>
+          </div>';
+    exit();
 }
-
 $oMysql = conecta_db();
 
 if ($oMysql->connect_error) {

@@ -5,7 +5,11 @@ require_once 'conecta_db.php';
 include "header.php";
 
 if (!isset($_SESSION['id'])) {
-    header("Location: login.php");
+    echo '<div class="container" style="margin-top: 70px;">
+            <div class="alert alert-danger" role="alert">
+                Você não está logado.
+            </div>
+          </div>';
     exit();
 }
 

@@ -20,14 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         isset($_POST['nome']) &&
         isset($_POST['email']) &&
         isset($_POST['senha']) &&
-        isset($_POST['curso'])
+        isset($_POST['curso']) &&
+        isset($_POST['disciplinas']) && count($_POST['disciplinas']) > 0
     ) {
         $nome = $_POST['nome'];
         $email = $_POST['email'];
         $senha = $_POST['senha'];
         $curso = $_POST['curso'];
 
-        // Validação da senha no backend
         if (!senha_forte($senha)) {
             $erro = "Senha fraca. Use no mínimo 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais.";
         } else {
@@ -59,63 +59,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $stmt2 = $oMysql->prepare("INSERT INTO professor (id) VALUES (?)");
                         }
 
-                        if ($tipo_usuario === 'aluno' && isset($_POST['disciplinas'])) {
-                            $disciplinas = $_POST['disciplinas'];
+                        $disciplinas = $_POST['disciplinas'];
+                        if ($tipo_usuario === 'aluno') {
                             $stmt_disc = $oMysql->prepare("INSERT INTO alunos_possuem_disciplinas (aluno_codigo, disciplina_codigo) VALUES (?, ?)");
-
-                            foreach ($disciplinas as $disciplina_id) {
-                                $disciplina_id = intval($disciplina_id);
-                                $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
-                                $stmt_disc->execute();
-                            }
-                            $stmt_disc->close();
-                        }
-
-                        if ($tipo_usuario === 'professor' && isset($_POST['disciplinas'])) {
-                            $disciplinas = $_POST['disciplinas'];
+                        } else {
                             $stmt_disc = $oMysql->prepare("INSERT INTO professores_possuem_disciplinas (professor_codigo, disciplina_codigo) VALUES (?, ?)");
-
-                            foreach ($disciplinas as $disciplina_id) {
-                                $disciplina_id = intval($disciplina_id);
-                                $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
-                                $stmt_disc->execute();
-                            }
-                            $stmt_disc->close();
                         }
+
+                        foreach ($disciplinas as $disciplina_id) {
+                            $disciplina_id = intval($disciplina_id);
+                            $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
+                            $stmt_disc->execute();
+                        }
+                        $stmt_disc->close();
 
                         $stmt2->bind_param("i", $usuario_id);
-
                         if ($stmt2->execute()) {
-                            if ($tipo_usuario === 'aluno') {
-                                $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
-                                $stmt_curso->bind_param("s", $curso);
-                                $stmt_curso->execute();
-                                $stmt_curso->bind_result($codigo_curso);
-                                if ($stmt_curso->fetch()) {
-                                    $stmt_curso->close();
-
+                            $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
+                            $stmt_curso->bind_param("s", $curso);
+                            $stmt_curso->execute();
+                            $stmt_curso->bind_result($codigo_curso);
+                            if ($stmt_curso->fetch()) {
+                                $stmt_curso->close();
+                                if ($tipo_usuario === 'aluno') {
                                     $stmt_intermediaria = $oMysql->prepare("INSERT INTO alunos_possuem_cursos (aluno_codigo, curso_codigo) VALUES (?, ?)");
-                                    $stmt_intermediaria->bind_param("ii", $usuario_id, $codigo_curso);
-                                    $stmt_intermediaria->execute();
-                                    $stmt_intermediaria->close();
                                 } else {
-                                    $erro = "Curso não encontrado.";
-                                }
-                            } elseif ($tipo_usuario === 'professor') {
-                                $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
-                                $stmt_curso->bind_param("s", $curso);
-                                $stmt_curso->execute();
-                                $stmt_curso->bind_result($codigo_curso);
-                                if ($stmt_curso->fetch()) {
-                                    $stmt_curso->close();
-
                                     $stmt_intermediaria = $oMysql->prepare("INSERT INTO cursos_possuem_professores (curso_codigo, professor_codigo) VALUES (?, ?)");
-                                    $stmt_intermediaria->bind_param("ii", $codigo_curso, $usuario_id);
-                                    $stmt_intermediaria->execute();
-                                    $stmt_intermediaria->close();
-                                } else {
-                                    $erro = "Curso não encontrado.";
                                 }
+                                $stmt_intermediaria->bind_param("ii", $usuario_id, $codigo_curso);
+                                $stmt_intermediaria->execute();
+                                $stmt_intermediaria->close();
+                            } else {
+                                $erro = "Curso não encontrado.";
                             }
 
                             if (!$erro) {
@@ -131,10 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                     $stmt->close();
                 }
-
                 $oMysql->close();
             }
         }
+    } else {
+        $erro = "Todos os campos obrigatórios devem ser preenchidos e pelo menos uma disciplina deve ser selecionada.";
     }
 }
 ?>
@@ -165,7 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2 class="mb-3">Cadastro de Usuário</h2>
     <p>Preencha os campos abaixo:</p>    
 
-    <label style="color: red;">*  = Campo obrigatório</label>
+    <label style="color: red;"></label>
     <br>
 
     <?php if ($erro): ?>
@@ -175,36 +151,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <form id="formCadastro" method="POST" action="cadastro.php?tipo=<?= htmlspecialchars($tipo_usuario) ?>">
 
       <label for="nome" class="form-label">Nome <span style="color: red;">*</span></label>
-      <input
-        type="text"
-        name="nome"
-        id="nome"
-        class="form-control mb-2"
-        placeholder="Nome"
-        required
-        value="<?= isset($nome) ? htmlspecialchars($nome) : '' ?>"
-      >
+      <input type="text" name="nome" id="nome" class="form-control mb-2" placeholder="Nome" required value="<?= isset($nome) ? htmlspecialchars($nome) : '' ?>">
 
       <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
-      <input
-        type="email"
-        name="email"
-        id="email"
-        class="form-control mb-2"
-        placeholder="Email (ex: maria@email.com)"
-        required
-        value="<?= isset($email) ? htmlspecialchars($email) : '' ?>"
-      >
+      <input type="email" name="email" id="email" class="form-control mb-2" placeholder="Email (ex: maria@email.com)" required value="<?= isset($email) ? htmlspecialchars($email) : '' ?>">
 
       <label for="senha" class="form-label">Senha <span style="color: red;">*</span></label>
-      <input
-        type="password"
-        name="senha"
-        id="senha"
-        class="form-control mb-2"
-        placeholder="Senha"
-        required
-      >
+      <input type="password" name="senha" id="senha" class="form-control mb-2" placeholder="Senha" required>
 
       <label for="curso" class="form-label">Curso <span style="color: red;">*</span></label>
       <select name="curso" id="curso" class="form-select mb-3" required>
@@ -228,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       ?>
 
       <div class="mb-3">
-        <label for="disciplinas" class="form-label">Disciplinas</label><br>
+        <label for="disciplinas" class="form-label">Disciplinas <span style="color: red;">*</span></label><br>
         <?php foreach ($disciplinas as $disciplina): ?>
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="checkbox" name="disciplinas[]" value="<?= $disciplina['codigo_disciplina'] ?>" id="disciplina<?= $disciplina['codigo_disciplina'] ?>"
@@ -249,29 +202,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>
-
-
   </div>
 </div>
 
 <script>
 document.getElementById('formCadastro').addEventListener('submit', function(e) {
     const senha = document.getElementById('senha').value;
+    const checkboxes = document.querySelectorAll('input[name="disciplinas[]"]:checked');
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
-    const erroDiv = document.querySelector('.msg-erro');
-    if (erroDiv) erroDiv.remove();
+    const erroAntigo = document.querySelector('.msg-erro');
+    if (erroAntigo) erroAntigo.remove();
 
     if (!regex.test(senha)) {
         e.preventDefault();
-
         const msgErro = document.createElement('div');
         msgErro.classList.add('msg-erro');
         msgErro.textContent = "Senha fraca. Use no mínimo 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais.";
-        
         const form = document.getElementById('formCadastro');
         form.parentNode.insertBefore(msgErro, form);
         document.getElementById('senha').focus();
+        return;
+    }
+
+    if (checkboxes.length === 0) {
+        e.preventDefault();
+        const msgErro = document.createElement('div');
+        msgErro.classList.add('msg-erro');
+        msgErro.textContent = "Selecione pelo menos uma disciplina.";
+        const form = document.getElementById('formCadastro');
+        form.parentNode.insertBefore(msgErro, form);
+        const primeiroCheckbox = document.querySelector('input[name="disciplinas[]"]');
+        if (primeiroCheckbox) primeiroCheckbox.focus();
+        return;
     }
 });
 </script>

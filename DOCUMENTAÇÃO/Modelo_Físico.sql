@@ -2,7 +2,6 @@
 CREATE SCHEMA IF NOT EXISTS learnhub_ep;
 USE learnhub_ep;
 
-DROP SCHEMA learnhub_ep;
 
 -- Tabela de usuários (base para especializações)
 CREATE TABLE usuarios (
@@ -41,10 +40,6 @@ CREATE TABLE disciplinas (
     codigo_disciplina INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nome_disciplina VARCHAR(90) NOT NULL,
     modalidade_disciplina VARCHAR(45) NOT NULL
-);
-
-CREATE TABLE periodos (
-    numero_periodo INT UNSIGNED PRIMARY KEY
 );
 
 -- Perguntas e respostas
@@ -124,14 +119,6 @@ CREATE TABLE disciplinas_possuem_monitores (
     FOREIGN KEY (monitor_codigo) REFERENCES usuarios(id) ON DELETE CASCADE
 );
 
--- Monitores em períodos
-CREATE TABLE periodos_possuem_monitores (
-    numero_periodo INT UNSIGNED NOT NULL,
-    codigo_monitor INT NOT NULL,
-    PRIMARY KEY (numero_periodo, codigo_monitor),
-    FOREIGN KEY (numero_periodo) REFERENCES periodos(numero_periodo) ON DELETE CASCADE,
-    FOREIGN KEY (codigo_monitor) REFERENCES usuarios(id) ON DELETE CASCADE
-);
 
 -- Aluno fez uma pergunta
 CREATE TABLE aluno_possui_pergunta (
@@ -172,12 +159,6 @@ ALTER TABLE respostas
 
 
 
-
-
-
--- Dados iniciais para períodos e disciplinas
-INSERT INTO periodos (numero_periodo) VALUES (1), (2), (3), (4);
-
 INSERT INTO curso (nome_curso, duracao_curso) VALUES
 ('Engenharia de Software', 8),
 ('Sistemas de Informação', 8),
@@ -212,4 +193,3 @@ BEGIN
 END $$
 
 DELIMITER ;
-

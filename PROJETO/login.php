@@ -2,12 +2,23 @@
 session_start();
 require_once 'conecta_db.php';
 
+// Zera tentativas se entrou na página via GET (não submeteu formulário)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $_SESSION['tentativas'] = 0;
+}
+
+// Redireciona se já estiver logado
 if (isset($_SESSION['id'])) {
     switch ($_SESSION['tipo_usuario']) {
         case 'aluno': header('Location: home_aluno.php'); exit;
         case 'professor': header('Location: home_professor.php'); exit;
         case 'monitor': header('Location: home_monitor.php'); exit;
     }
+}
+
+// Inicializa contador de tentativas
+if (!isset($_SESSION['tentativas'])) {
+    $_SESSION['tentativas'] = 0;
 }
 
 if (isset($_POST['email']) && isset($_POST['senha'])) {
@@ -37,6 +48,9 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
             $_SESSION['nome'] = $user['nome'];
             $_SESSION['tipo_usuario'] = $user['tipo_usuario'];
 
+            // Zera tentativas ao logar com sucesso
+            $_SESSION['tentativas'] = 0;
+
             if ($user['tipo_usuario'] === 'aluno') {
                 $stmtAluno = $oMysql->prepare("SELECT a.id AS codigo_aluno FROM aluno a WHERE a.id = ?");
                 $stmtAluno->bind_param("i", $user['id']);
@@ -55,9 +69,11 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
                 $erro = "Tipo de usuário inválido!";
             }
         } else {
+            $_SESSION['tentativas'] += 1;
             $erro = "Senha incorreta!";
         }
     } else {
+        $_SESSION['tentativas'] += 1;
         $erro = "Usuário não encontrado!";
     }
 
@@ -72,7 +88,6 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
   <title>Login | LearnHub</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
@@ -144,6 +159,12 @@ if (isset($_POST['email']) && isset($_POST['senha'])) {
       <input type="password" name="senha" class="form-control mb-3" placeholder="Senha" required>
       <button type="submit" class="btn btn-primary w-100">Entrar</button>
     </form>
+
+    <?php if ($_SESSION['tentativas'] >= 2) { ?>
+      <div class="text-center mt-3">
+        <a href="recuperar_senha.php">Esqueceu sua senha?</a>
+      </div>
+    <?php } ?>
   </div>
 </div>
 

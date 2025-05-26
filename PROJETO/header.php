@@ -81,6 +81,20 @@ if (session_status() === PHP_SESSION_NONE) {
     border-color: #adff2f;
     color: #adff2f;
   }
+
+  #inactivity-warning {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ffc107;
+    color: #000;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+    font-weight: bold;
+}
   </style>
 </head>
 
@@ -264,6 +278,47 @@ if (session_status() === PHP_SESSION_NONE) {
   </div>
 </nav>
 
+<div id="inactivity-warning">
+    Você será desconectado em 10 segundos por inatividade.
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<script>
+    let timeout;
+    let warningTimeout;
+    const warningDiv = document.getElementById('inactivity-warning');
+
+    function resetTimer() {
+        clearTimeout(timeout);
+        clearTimeout(warningTimeout);
+        hideWarning();
+
+        // Exibe o aviso após 50 segundos
+        warningTimeout = setTimeout(showWarning, 50000);
+
+        // Faz o logout após 60 segundos
+        timeout = setTimeout(logoutUser, 60000);
+    }
+
+    function showWarning() {
+        warningDiv.style.display = 'block';
+    }
+
+    function hideWarning() {
+        warningDiv.style.display = 'none';
+    }
+
+    function logoutUser() {
+        window.location.href = "logout.php";
+    }
+
+    // Eventos que indicam atividade
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+    document.onscroll = resetTimer;
+    document.onclick = resetTimer;
+</script>

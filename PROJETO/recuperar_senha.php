@@ -2,23 +2,34 @@
 session_start();
 require_once 'conecta_db.php';
 
+// Função para validar senha forte
+function senha_forte($senha) {
+    return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $senha);
+}
+
 if (isset($_POST['email'], $_POST['nova_senha'])) {
     $email = $_POST['email'];
-    $novaSenha = password_hash($_POST['nova_senha'], PASSWORD_DEFAULT);
+    $senhaDigitada = $_POST['nova_senha'];
 
-    $conn = conecta_db();
-    $stmt = $conn->prepare("UPDATE usuarios SET senha = ? WHERE email = ?");
-    $stmt->bind_param("ss", $novaSenha, $email);
-
-    if ($stmt->execute() && $stmt->affected_rows > 0) {
-        $mensagem = "Senha atualizada com sucesso! Redirecionando para o login...";
-        header("refresh:3; url=login.php");
+    if (!senha_forte($senhaDigitada)) {
+        $mensagem = "A senha deve ter no mínimo 8 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.";
     } else {
-        $mensagem = "Usuário não encontrado.";
-    }
+        $novaSenha = password_hash($senhaDigitada, PASSWORD_DEFAULT);
 
-    $stmt->close();
-    $conn->close();
+        $conn = conecta_db();
+        $stmt = $conn->prepare("UPDATE usuarios SET senha = ? WHERE email = ?");
+        $stmt->bind_param("ss", $novaSenha, $email);
+
+        if ($stmt->execute() && $stmt->affected_rows > 0) {
+            $mensagem = "Senha atualizada com sucesso! Redirecionando para o login...";
+            header("refresh:3; url=login.php");
+        } else {
+            $mensagem = "Usuário não encontrado.";
+        }
+
+        $stmt->close();
+        $conn->close();
+    }
 }
 ?>
 
@@ -39,8 +50,13 @@ if (isset($_POST['email'], $_POST['nova_senha'])) {
 
   <form method="POST" class="mt-3">
     <input type="email" name="email" class="form-control mb-3" placeholder="Seu e-mail cadastrado" required>
-    <input type="password" name="nova_senha" class="form-control mb-3" placeholder="Nova senha" required>
-    
+
+    <input type="password" name="nova_senha" class="form-control mb-3"
+           placeholder="Nova senha"
+           pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}"
+           title="Mínimo 8 caracteres, com letra maiúscula, minúscula, número e caractere especial"
+           required>
+
     <div class="d-flex justify-content-between">
       <button type="submit" class="btn btn-primary">Atualizar Senha</button>
       <a href="login.php" class="btn btn-secondary">Cancelar</a>

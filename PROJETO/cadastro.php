@@ -1,51 +1,59 @@
 <?php
-// Conecta com o banco de dados
+// Inclui o arquivo de conexão com o banco de dados
 require_once 'conecta_db.php';
 
-// Variável para armazenar mensagens de erro
-$erro = '';
+$erro = ''; // Variável para armazenar mensagens de erro
 
-// Verifica se o tipo de usuário (aluno ou professor) foi definido na URL
+// Obtém o tipo de usuário via URL (aluno ou professor)
 if (isset($_GET['tipo']) && in_array($_GET['tipo'], ['aluno', 'professor'])) {
-  $tipo_usuario = $_GET['tipo'];
+    $tipo_usuario = $_GET['tipo'];
 } else {
-  // Se não estiver definido corretamente, redireciona para index.php com alerta
-  echo "<script>alert('Tipo de usuário inválido ou não especificado.'); window.location.href = 'index.php';</script>";
-  exit;
+    // Se não for válido, redireciona para index com alerta
+    echo "<script>alert('Tipo de usuário inválido ou não especificado.'); window.location.href = 'index.php';</script>";
+    exit;
 }
 
-// Função que valida se a senha é forte (mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e símbolos)
+// Função para validar a força da senha
 function senha_forte($senha) {
+    // Regex: mínimo 8 caracteres, inclui minúscula, maiúscula, número e caractere especial
     return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $senha);
 }
 
-// Se o formulário foi enviado via método POST
+// Se o formulário foi enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifica se todos os campos obrigatórios foram preenchidos
     if (
         isset($_POST['nome']) &&
         isset($_POST['email']) &&
         isset($_POST['senha']) &&
-        isset($_POST['curso']) &&
-        isset($_POST['disciplinas']) && count($_POST['disciplinas']) > 0
+        isset($_POST['confirmar_senha']) &&
+        isset($_POST['curso'])
     ) {
+        // Obtém e armazena os dados do formulário
         $nome = $_POST['nome'];
         $email = $_POST['email'];
         $senha = $_POST['senha'];
+        $confirmar_senha = $_POST['confirmar_senha'];
         $curso = $_POST['curso'];
 
-        // Verifica se a senha é forte
-        if (!senha_forte($senha)) {
+        // Valida se as senhas coincidem
+        if ($senha !== $confirmar_senha) {
+            $erro = "As senhas não coincidem.";
+        } 
+        // Valida se a senha é forte
+        elseif (!senha_forte($senha)) {
             $erro = "Senha fraca. Use no mínimo 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais.";
-        } else {
+        } 
+        else {
             // Criptografa a senha
             $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-            $oMysql = conecta_db(); // Abre a conexão com o banco
+            $oMysql = conecta_db();
 
+            // Verifica a conexão com o banco de dados
             if ($oMysql->connect_error) {
                 $erro = "Erro de conexão: " . $oMysql->connect_error;
             } else {
-                // Verifica se o e-mail já está cadastrado
+                // Verifica se o email já está cadastrado
                 $stmt_check = $oMysql->prepare("SELECT id FROM usuarios WHERE email = ?");
                 $stmt_check->bind_param("s", $email);
                 $stmt_check->execute();
@@ -56,61 +64,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $stmt_check->close();
 
-                    // INSERE o novo usuário na tabela `usuarios`
+                    // Insere o novo usuário na tabela usuarios
                     $stmt = $oMysql->prepare("INSERT INTO usuarios (nome, email, senha, tipo_usuario, curso) VALUES (?, ?, ?, ?, ?)");
                     $stmt->bind_param("sssss", $nome, $email, $senha_hash, $tipo_usuario, $curso);
 
                     if ($stmt->execute()) {
-                        $usuario_id = $oMysql->insert_id; // Pega o ID gerado automaticamente
+                        $usuario_id = $oMysql->insert_id; // Obtém o ID do usuário recém-cadastrado
 
-                        // Insere o ID do usuário na tabela específica (aluno ou professor)
+                        // Insere na tabela específica conforme o tipo de usuário
                         if ($tipo_usuario === 'aluno') {
                             $stmt2 = $oMysql->prepare("INSERT INTO aluno (id) VALUES (?)");
                         } elseif ($tipo_usuario === 'professor') {
                             $stmt2 = $oMysql->prepare("INSERT INTO professor (id) VALUES (?)");
                         }
 
-                        // Prepara a inserção na tabela intermediária de disciplinas
-                        $disciplinas = $_POST['disciplinas'];
-                        if ($tipo_usuario === 'aluno') {
+                        // Se for aluno e disciplinas foram selecionadas
+                        if ($tipo_usuario === 'aluno' && isset($_POST['disciplinas'])) {
+                            $disciplinas = $_POST['disciplinas'];
                             $stmt_disc = $oMysql->prepare("INSERT INTO alunos_possuem_disciplinas (aluno_codigo, disciplina_codigo) VALUES (?, ?)");
-                        } else {
-                            $stmt_disc = $oMysql->prepare("INSERT INTO professores_possuem_disciplinas (professor_codigo, disciplina_codigo) VALUES (?, ?)");
+
+                            foreach ($disciplinas as $disciplina_id) {
+                                $disciplina_id = intval($disciplina_id);
+                                $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
+                                $stmt_disc->execute();
+                            }
+                            $stmt_disc->close();
                         }
 
-                        // Faz o laço e insere cada disciplina marcada
-                        foreach ($disciplinas as $disciplina_id) {
-                            $disciplina_id = intval($disciplina_id);
-                            $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
-                            $stmt_disc->execute();
+                        // Se for professor e disciplinas foram selecionadas
+                        if ($tipo_usuario === 'professor' && isset($_POST['disciplinas'])) {
+                            $disciplinas = $_POST['disciplinas'];
+                            $stmt_disc = $oMysql->prepare("INSERT INTO professores_possuem_disciplinas (professor_codigo, disciplina_codigo) VALUES (?, ?)");
+
+                            foreach ($disciplinas as $disciplina_id) {
+                                $disciplina_id = intval($disciplina_id);
+                                $stmt_disc->bind_param("ii", $usuario_id, $disciplina_id);
+                                $stmt_disc->execute();
+                            }
+                            $stmt_disc->close();
                         }
-                        $stmt_disc->close();
 
                         // Insere na tabela aluno ou professor
                         $stmt2->bind_param("i", $usuario_id);
+
                         if ($stmt2->execute()) {
-                            // Busca o código do curso com base no nome selecionado
+                            // Busca o código do curso baseado no nome
                             $stmt_curso = $oMysql->prepare("SELECT codigo_curso FROM curso WHERE nome_curso = ?");
                             $stmt_curso->bind_param("s", $curso);
                             $stmt_curso->execute();
                             $stmt_curso->bind_result($codigo_curso);
+
                             if ($stmt_curso->fetch()) {
                                 $stmt_curso->close();
 
-                                // Insere a relação entre curso e aluno ou professor
+                                // Se for aluno, insere na tabela de relação com cursos
                                 if ($tipo_usuario === 'aluno') {
                                     $stmt_intermediaria = $oMysql->prepare("INSERT INTO alunos_possuem_cursos (aluno_codigo, curso_codigo) VALUES (?, ?)");
-                                } else {
+                                    $stmt_intermediaria->bind_param("ii", $usuario_id, $codigo_curso);
+                                    $stmt_intermediaria->execute();
+                                    $stmt_intermediaria->close();
+                                } 
+                                // Se for professor, insere na tabela de relação com cursos
+                                elseif ($tipo_usuario === 'professor') {
                                     $stmt_intermediaria = $oMysql->prepare("INSERT INTO cursos_possuem_professores (curso_codigo, professor_codigo) VALUES (?, ?)");
+                                    $stmt_intermediaria->bind_param("ii", $codigo_curso, $usuario_id);
+                                    $stmt_intermediaria->execute();
+                                    $stmt_intermediaria->close();
                                 }
-                                $stmt_intermediaria->bind_param("ii", $usuario_id, $codigo_curso);
-                                $stmt_intermediaria->execute();
-                                $stmt_intermediaria->close();
                             } else {
                                 $erro = "Curso não encontrado.";
                             }
 
-                            // Se tudo ocorreu bem, mostra mensagem e redireciona
+                            // Se não houve erro até aqui, exibe sucesso
                             if (!$erro) {
                                 echo "<script>alert('Cadastro realizado com sucesso!'); window.location.href = 'index.php';</script>";
                                 exit;
@@ -127,19 +152,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oMysql->close();
             }
         }
-    } else {
-        $erro = "Todos os campos obrigatórios devem ser preenchidos e pelo menos uma disciplina deve ser selecionada.";
     }
 }
 ?>
 
-<!-- HTML da página de cadastro -->
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <title>Cadastro de Usuários</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
@@ -162,29 +185,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h2 class="mb-3">Cadastro de Usuário</h2>
     <p>Preencha os campos abaixo:</p>    
 
+    <label style="color: red;">*  = Campo obrigatório</label>
+    <br>
+
+    <!-- Exibe mensagem de erro se houver -->
     <?php if ($erro): ?>
       <div class="msg-erro"><?= htmlspecialchars($erro) ?></div>
     <?php endif; ?>
 
-    <!-- Formulário POST para cadastro -->
+    <!-- Formulário de cadastro -->
     <form id="formCadastro" method="POST" action="cadastro.php?tipo=<?= htmlspecialchars($tipo_usuario) ?>">
 
-      <!-- Campo nome -->
-      <label for="nome" class="form-label">Nome *</label>
-      <input type="text" name="nome" id="nome" class="form-control mb-2" required value="<?= isset($nome) ? htmlspecialchars($nome) : '' ?>">
+      <label for="nome" class="form-label">Nome <span style="color: red;">*</span></label>
+      <input
+        type="text"
+        name="nome"
+        id="nome"
+        class="form-control mb-2"
+        placeholder="Nome"
+        required
+        value="<?= isset($nome) ? htmlspecialchars($nome) : '' ?>"
+      >
 
-      <!-- Campo email -->
-      <label for="email" class="form-label">Email *</label>
-      <input type="email" name="email" id="email" class="form-control mb-2" required value="<?= isset($email) ? htmlspecialchars($email) : '' ?>">
+      <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
+      <input
+        type="email"
+        name="email"
+        id="email"
+        class="form-control mb-2"
+        placeholder="Email (ex: maria@email.com)"
+        required
+        value="<?= isset($email) ? htmlspecialchars($email) : '' ?>"
+      >
 
-      <!-- Campo senha -->
-      <label for="senha" class="form-label">Senha *</label>
-      <input type="password" name="senha" id="senha" class="form-control mb-2" required>
+      <label for="senha" class="form-label">Senha <span style="color: red;">*</span></label>
+      <input
+        type="password"
+        name="senha"
+        id="senha"
+        class="form-control mb-2"
+        placeholder="Senha"
+        required
+      >
 
-      <!-- Campo curso -->
-      <label for="curso" class="form-label">Curso *</label>
+      <label for="confirmar_senha" class="form-label">Confirmar Senha <span style="color: red;">*</span></label>
+      <input
+        type="password"
+        name="confirmar_senha"
+        id="confirmar_senha"
+        class="form-control mb-2"
+        placeholder="Confirme a Senha"
+        required
+      >
+
+      <label for="curso" class="form-label">Curso <span style="color: red;">*</span></label>
       <select name="curso" id="curso" class="form-select mb-3" required>
         <option value="" disabled <?= !isset($curso) ? 'selected' : '' ?>>Selecione seu curso</option>
+        
         <!-- Cursos disponíveis -->
         <option value="Engenharia de Software" <?= (isset($curso) && $curso === 'Engenharia de Software') ? 'selected' : '' ?>>Engenharia de Software</option>
         <option value="Sistemas de Informação" <?= (isset($curso) && $curso === 'Sistemas de Informação') ? 'selected' : '' ?>>Sistemas de Informação</option>
@@ -194,7 +251,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </select>
 
       <?php
-        // Busca todas as disciplinas para montar os checkboxes dinamicamente
+        // Busca todas as disciplinas cadastradas no banco
         require_once 'conecta_db.php';
         $oMysql = conecta_db();
         $disciplinas = [];
@@ -205,9 +262,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $oMysql->close();
       ?>
 
-      <!-- Checkbox para selecionar disciplinas -->
+      <!-- Checkbox de disciplinas -->
       <div class="mb-3">
-        <label for="disciplinas" class="form-label">Disciplinas *</label><br>
+        <label for="disciplinas" class="form-label">Disciplinas</label><br>
         <?php foreach ($disciplinas as $disciplina): ?>
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="checkbox" name="disciplinas[]" value="<?= $disciplina['codigo_disciplina'] ?>" id="disciplina<?= $disciplina['codigo_disciplina'] ?>"
@@ -224,48 +281,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
       </div>
 
-      <!-- Campo oculto para manter o tipo de usuário -->
       <input type="hidden" name="tipo_usuario_url" value="<?= htmlspecialchars($tipo_usuario) ?>">
 
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>
   </div>
 </div>
-
-<!-- Validação de formulário no lado do cliente (JavaScript) -->
-<script>
-document.getElementById('formCadastro').addEventListener('submit', function(e) {
-    const senha = document.getElementById('senha').value;
-    const checkboxes = document.querySelectorAll('input[name="disciplinas[]"]:checked');
-    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-
-    const erroAntigo = document.querySelector('.msg-erro');
-    if (erroAntigo) erroAntigo.remove();
-
-    if (!regex.test(senha)) {
-        e.preventDefault();
-        const msgErro = document.createElement('div');
-        msgErro.classList.add('msg-erro');
-        msgErro.textContent = "Senha fraca. Use no mínimo 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais.";
-        const form = document.getElementById('formCadastro');
-        form.parentNode.insertBefore(msgErro, form);
-        document.getElementById('senha').focus();
-        return;
-    }
-
-    if (checkboxes.length === 0) {
-        e.preventDefault();
-        const msgErro = document.createElement('div');
-        msgErro.classList.add('msg-erro');
-        msgErro.textContent = "Selecione pelo menos uma disciplina.";
-        const form = document.getElementById('formCadastro');
-        form.parentNode.insertBefore(msgErro, form);
-        const primeiroCheckbox = document.querySelector('input[name="disciplinas[]"]');
-        if (primeiroCheckbox) primeiroCheckbox.focus();
-        return;
-    }
-});
-</script>
 
 </body>
 </html>

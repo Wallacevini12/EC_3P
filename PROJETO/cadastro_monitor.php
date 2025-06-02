@@ -1,31 +1,27 @@
 <?php
-// Inicia a sessão
 session_start();
+include_once 'conecta_db.php'; // Inclui o arquivo de conexão com o banco
+include_once 'header.php';     // Inclui o cabeçalho padrão
 
-// Inclui arquivos com a conexão ao banco de dados e o cabeçalho da página
-include_once 'conecta_db.php';
-include_once 'header.php';
-
-// Verifica se o usuário está logado como professor
+// Verifica se o usuário está logado e se é professor
 if (!isset($_SESSION['id']) || $_SESSION['tipo_usuario'] !== 'professor') {
     echo '<div class="container" style="margin-top: 70px;">
             <div class="alert alert-danger" role="alert">
-                Você não está logado como professor.
+                Você não testá logado como professor.
             </div>
           </div>';
-    exit(); // Encerra o script
+    exit();
 }
 
-// Conecta ao banco de dados
 $oMysql = conecta_db();
+
 if ($oMysql->connect_error) {
     die("Erro de conexão: " . $oMysql->connect_error);
 }
 
-// Obtém o ID do professor logado
-$professor_id = $_SESSION['id'];
+$professor_id = $_SESSION['id']; // Obtém o ID do professor da sessão
 
-// Consulta para buscar as disciplinas associadas ao professor
+// Buscar disciplinas vinculadas ao professor
 $sql = "SELECT d.codigo_disciplina, d.nome_disciplina
         FROM disciplinas d
         JOIN professores_possuem_disciplinas p ON d.codigo_disciplina = p.disciplina_codigo
@@ -35,7 +31,6 @@ $stmt_disciplina->bind_param("i", $professor_id);
 $stmt_disciplina->execute();
 $result_disciplina = $stmt_disciplina->get_result();
 
-// Armazena disciplinas em um array
 $disciplinas = [];
 if ($result_disciplina && $result_disciplina->num_rows > 0) {
     while ($row = $result_disciplina->fetch_assoc()) {
@@ -44,12 +39,12 @@ if ($result_disciplina && $result_disciplina->num_rows > 0) {
 }
 $stmt_disciplina->close();
 
-// Inicializa mensagens
 $mensagem_erro = '';
-$mensagem_sucesso = false;
+$mensagem_sucesso = false; // Agora booleano para indicar sucesso
 
-// Função para validar se a senha é forte
+// Função para validar senha forte
 function senha_forte($senha) {
+    // Pelo menos 8 caracteres, 1 maiúscula, 1 minúscula, 1 número e 1 caractere especial
     return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/', $senha);
 }
 
@@ -57,25 +52,30 @@ function senha_forte($senha) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifica se todos os campos obrigatórios foram preenchidos
     if (
-        isset($_POST['nome'], $_POST['email'], $_POST['senha'], $_POST['curso'], $_POST['disciplina']) &&
-        !empty($_POST['nome']) &&
-        !empty($_POST['email']) &&
-        !empty($_POST['senha']) &&
-        !empty($_POST['curso']) &&
-        !empty($_POST['disciplina'])
+        isset($_POST['nome'], $_POST['email'], $_POST['senha'], $_POST['confirmar_senha'], $_POST['curso'], $_POST['disciplina'])
+        && !empty($_POST['nome'])
+        && !empty($_POST['email'])
+        && !empty($_POST['senha'])
+        && !empty($_POST['confirmar_senha'])
+        && !empty($_POST['curso'])
+        && !empty($_POST['disciplina'])
     ) {
         // Limpa os dados do formulário
         $nome = trim($_POST['nome']);
         $email = trim($_POST['email']);
         $senha = $_POST['senha'];
+        $confirmar_senha = $_POST['confirmar_senha'];
         $curso = trim($_POST['curso']);
         $disciplina_codigo = (int)$_POST['disciplina'];
 
-        // Verifica se a senha é forte
+        // Validação da senha forte
         if (!senha_forte($senha)) {
             $mensagem_erro = "Senha fraca! A senha deve conter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.";
+        } elseif ($senha !== $confirmar_senha) {
+            // Verificação se as senhas coincidem
+            $mensagem_erro = "As senhas não coincidem. Por favor, tente novamente.";
         } else {
-            // Verifica se o e-mail já está cadastrado
+            // Verifica se o e-mail já existe no banco
             $stmt_verifica = $oMysql->prepare("SELECT id FROM usuarios WHERE email = ?");
             $stmt_verifica->bind_param("s", $email);
             $stmt_verifica->execute();
@@ -84,11 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt_verifica->num_rows > 0) {
                 $mensagem_erro = "Este e-mail já está cadastrado. Tente novamente com outro e-mail.";
             } else {
-                // Criptografa a senha
+                // Gera o hash da senha para armazenamento seguro
                 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+
+                // Define tipo de usuário como monitor
                 $tipo_usuario = 'monitor';
 
-                // Insere o usuário na tabela 'usuarios'
+                // Prepara a inserção na tabela 'usuarios'
                 $stmt = $oMysql->prepare("INSERT INTO usuarios (nome, email, senha, tipo_usuario, curso) VALUES (?, ?, ?, ?, ?)");
                 if (!$stmt) {
                     $mensagem_erro = "Erro na preparação da query: " . $oMysql->error;
@@ -98,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         // Recupera o ID do novo usuário
                         $usuario_id = $oMysql->insert_id;
 
-                        // Insere o usuário na tabela 'monitor'
+                        // Insere na tabela 'monitor'
                         $stmt2 = $oMysql->prepare("INSERT INTO monitor (id) VALUES (?)");
                         if (!$stmt2) {
                             $mensagem_erro = "Erro na preparação da query monitor: " . $oMysql->error;
@@ -106,15 +108,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $stmt2->bind_param("i", $usuario_id);
                             if ($stmt2->execute()) {
 
-                                // Vincula o monitor à disciplina selecionada
+                                // Relaciona o monitor à disciplina escolhida
                                 $stmt3 = $oMysql->prepare("INSERT INTO monitores_possuem_disciplinas (disciplina_codigo, monitor_codigo) VALUES (?, ?)");
                                 if (!$stmt3) {
                                     $mensagem_erro = "Erro na preparação da query monitores_possuem_disciplinas: " . $oMysql->error;
                                 } else {
                                     $stmt3->bind_param("ii", $disciplina_codigo, $usuario_id);
                                     if ($stmt3->execute()) {
-                                        // Cadastro bem-sucedido
-                                        $mensagem_sucesso = true;
+                                        $mensagem_sucesso = true; // sucesso confirmado
                                     } else {
                                         $mensagem_erro = "Erro ao vincular monitor à disciplina: " . $stmt3->error;
                                     }
@@ -157,40 +158,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-<!-- Conteúdo da página de cadastro -->
+<!-- Card centralizado com o formulário -->
 <div class="container d-flex justify-content-center align-items-center min-vh-100">
   <div class="card shadow p-4" style="min-width: 400px; max-width: 500px; width: 100%;">
 
     <h2 class="mb-3">Cadastrar Monitor</h2>
     <p class="mb-4">Preencha os campos abaixo para cadastrar um monitor:</p> 
 
-    <!-- Exibe mensagem de erro, se houver -->
     <?php if ($mensagem_erro): ?>
       <div class="mensagem-erro"><?php echo htmlspecialchars($mensagem_erro); ?></div>
     <?php endif; ?>
 
-    <!-- Formulário de cadastro -->
     <form method="POST" action="">
-      <!-- Campo nome -->
+
+      <label style="color: red;">*  = Campo obrigatório</label>
+      <br>
+      <br>
+
       <label for="nome" class="form-label">Nome <span style="color: red;">*</span></label>
-      <input type="text" name="nome" class="form-control mb-2" placeholder="Nome" required
-        value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>" />
+      <input
+        type="text"
+        name="nome"
+        class="form-control mb-2"
+        placeholder="Nome"
+        required
+        value="<?php echo isset($_POST['nome']) ? htmlspecialchars($_POST['nome']) : ''; ?>"
+      />
 
-      <!-- Campo email -->
       <label for="email" class="form-label">Email <span style="color: red;">*</span></label>
-      <input type="email" name="email" class="form-control mb-2" placeholder="Email" required
-        value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" />
+      <input
+        type="email"
+        name="email"
+        class="form-control mb-2"
+        placeholder="Email (ex: maria@monitor)"
+        required
+        value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>"
+      />
 
-      <!-- Campo senha -->
       <label for="senha" class="form-label">Senha <span style="color: red;">*</span></label>
-      <input type="password" name="senha" class="form-control mb-2" placeholder="Senha" required />
+      <input
+        type="password"
+        name="senha"
+        class="form-control mb-2"
+        placeholder="Senha"
+        required
+      />
+
+      <!-- Campo de confirmação de senha adicionado -->
+      <label for="confirmar_senha" class="form-label">Confirmar Senha <span style="color: red;">*</span></label>
+      <input
+        type="password"
+        name="confirmar_senha"
+        class="form-control mb-2"
+        placeholder="Confirme a Senha"
+        required
+      />
 
       <!-- Campo curso -->
       <label for="curso" class="form-label">Curso <span style="color: red;">*</span></label>
       <select name="curso" class="form-select mb-2" required>
         <option value="" disabled <?php echo !isset($_POST['curso']) ? 'selected' : ''; ?>>Selecione seu curso</option>
         <?php 
-        // Lista de cursos disponíveis
         $cursos = [
           "Engenharia de Software",
           "Sistemas de Informação",
@@ -206,12 +234,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endforeach; ?>
       </select>
 
-      <!-- Campo disciplina -->
-      <label for="disciplinas" class="form-label">Disciplinas <span style="color: red;">*</span></label>
+      <label for="disciplinas" class="form-label">Disciplinas</label><br>
       <select name="disciplina" class="form-select mb-3" required>
-        <option value="" disabled <?php echo !isset($_POST['disciplina']) ? 'selected' : ''; ?>>
-          Selecione sua disciplina
-        </option>
+        <option value="" disabled <?php echo !isset($_POST['disciplina']) ? 'selected' : ''; ?>>Selecione sua disciplina</option>
         <?php foreach ($disciplinas as $disciplina): ?>
           <option value="<?php echo htmlspecialchars($disciplina['codigo_disciplina']); ?>"
             <?php echo (isset($_POST['disciplina']) && $_POST['disciplina'] == $disciplina['codigo_disciplina']) ? 'selected' : ''; ?>>
@@ -223,6 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <!-- Botão de envio -->
       <button type="submit" class="btn btn-primary w-100">Cadastrar</button>
     </form>
+
   </div>
 </div>
 
